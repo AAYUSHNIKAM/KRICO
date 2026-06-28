@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "145094980561",
+    "firebase_url": "https://auth-for-docs-default-rtdb.firebaseio.com",
+    "project_id": "auth-for-docs",
+    "storage_bucket": "auth-for-docs.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:145094980561:android:949d622d2c3c261d16a6f0",
+        "android_client_info": {
+          "package_name": "com.example.coach_booking"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDkgDJbS3QdwYusJHc6lyB0hE4yRilsu6s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
