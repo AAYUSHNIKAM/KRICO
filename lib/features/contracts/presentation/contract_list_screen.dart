@@ -244,23 +244,28 @@ class _ContractListScreenState extends ConsumerState<ContractListScreen> {
                   ],
                 ),
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text('₹${contract.totalAmount.toStringAsFixed(0)}', style: AppTextStyles.labelLarge.copyWith(fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
-                  const SizedBox(height: 4),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: statusColor.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(6),
+              Flexible(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text('₹${contract.totalAmount.toStringAsFixed(0)}', style: AppTextStyles.labelLarge.copyWith(fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
                     ),
-                    child: Text(
-                      contract.status.name.toUpperCase(),
-                      style: AppTextStyles.labelSmall.copyWith(color: statusColor, fontWeight: FontWeight.w700, fontSize: 9, letterSpacing: 0.8),
+                    const SizedBox(height: 4),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: statusColor.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        contract.status.name.toUpperCase(),
+                        style: AppTextStyles.labelSmall.copyWith(color: statusColor, fontWeight: FontWeight.w700, fontSize: 9, letterSpacing: 0.8),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ],
           ),

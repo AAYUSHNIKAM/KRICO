@@ -105,7 +105,9 @@ class _VenueDetailContent extends StatelessWidget {
                             children: [
                               Icon(Icons.sports_rounded, size: 14, color: Colors.white.withValues(alpha: 0.7)),
                               const SizedBox(width: 4),
-                              Text(sportLabel, style: AppTextStyles.caption.copyWith(color: Colors.white.withValues(alpha: 0.7))),
+                              Flexible(
+                                child: Text(sportLabel, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppTextStyles.caption.copyWith(color: Colors.white.withValues(alpha: 0.7))),
+                              ),
                             ],
                           ),
                         ],

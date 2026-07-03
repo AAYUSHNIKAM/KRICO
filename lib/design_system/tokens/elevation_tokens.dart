@@ -1,0 +1,15 @@
+import 'dart:ui';
+
+abstract final class ElevationTokens {
+  ElevationTokens._();
+
+  static const double none = 0;
+  static const double micro = 0.5;
+  static const double xxs = 1;
+  static const double xs = 2;
+  static const double sm = 4;
+  static const double md = 8;
+  static const double lg = 12;
+  static const double xl = 16;
+  static const double xl2 = 24;
+}

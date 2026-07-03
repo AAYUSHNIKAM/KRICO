@@ -126,22 +126,30 @@ class StudentsTab extends ConsumerWidget {
                                   ],
                                 ),
                               ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.secondary.withValues(alpha: 0.12),
-                                      borderRadius: BorderRadius.circular(8),
+                              Flexible(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.secondary.withValues(alpha: 0.12),
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: Text('#$rank',
+                                            style: TextStyle(color: AppColors.secondary, fontSize: 11, fontWeight: FontWeight.w600)),
+                                      ),
                                     ),
-                                    child: Text('#$rank',
-                                        style: TextStyle(color: AppColors.secondary, fontSize: 11, fontWeight: FontWeight.w600)),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text('$points XP',
-                                      style: AppTextStyles.caption.copyWith(color: AppColors.textDim)),
-                                ],
+                                    const SizedBox(height: 4),
+                                    FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: Text('$points XP',
+                                          style: AppTextStyles.caption.copyWith(color: AppColors.textDim)),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ],
                           ),

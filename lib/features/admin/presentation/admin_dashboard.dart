@@ -120,11 +120,11 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
     final revenueAsync = ref.watch(totalRevenueProvider);
     final activeUsersAsync = ref.watch(activeUsersCountProvider);
     final tasksAsync = ref.watch(adminTasksProvider);
-    final totalUsers = usersAsync.asData?.value?.docs.length ?? 0;
-    final totalVenues = venuesAsync.asData?.value?.length ?? 0;
+    final totalUsers = usersAsync.asData?.value.docs.length ?? 0;
+    final totalVenues = venuesAsync.asData?.value.length ?? 0;
     final totalRevenue = revenueAsync.asData?.value ?? 0;
     final activeUsers = activeUsersAsync.asData?.value ?? 0;
-    final taskList = tasksAsync.asData?.value?.docs ?? [];
+    final taskList = tasksAsync.asData?.value.docs ?? [];
 
     return Scaffold(
       body: CustomScrollView(

@@ -58,7 +58,7 @@ class ScheduleTab extends ConsumerWidget {
             ),
             sessionsAsync.when(
               data: (snap) {
-                final docs = List<QueryDocumentSnapshot<Map<String, dynamic>>>.from(snap.docs)
+                final docs = [...snap.docs]
                   ..sort((a, b) {
                     final aTime = (a.data()['dateTime'] as Timestamp?)?.toDate();
                     final bTime = (b.data()['dateTime'] as Timestamp?)?.toDate();
@@ -249,14 +249,17 @@ class _SessionCard extends ConsumerWidget {
             ],
           ),
         ),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-          decoration: BoxDecoration(
-            color: statusColor.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(8),
+        Flexible(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: statusColor.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(statusLabel,
+                maxLines: 1, overflow: TextOverflow.ellipsis,
+                style: TextStyle(color: statusColor, fontSize: 11, fontWeight: FontWeight.w600)),
           ),
-          child: Text(statusLabel,
-              style: TextStyle(color: statusColor, fontSize: 11, fontWeight: FontWeight.w600)),
         ),
       ],
     );

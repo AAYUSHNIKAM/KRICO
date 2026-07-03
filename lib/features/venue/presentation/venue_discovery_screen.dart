@@ -306,26 +306,31 @@ class _VenueDiscoveryScreenState extends ConsumerState<VenueDiscoveryScreen> {
                   ],
                 ),
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  if (venue.pricePerHour != null)
-                    Text('₹${venue.pricePerHour!.toStringAsFixed(0)}/hr', style: AppTextStyles.labelLarge.copyWith(color: AppColors.primary, fontWeight: FontWeight.w700)),
-                  const SizedBox(height: 6),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      gradient: isGoogle
-                          ? const LinearGradient(colors: [Color(0xFFFFD700), Color(0xFFFFA500)])
-                          : const LinearGradient(colors: AppColors.gradientPrimary),
-                      borderRadius: BorderRadius.circular(6),
+              Flexible(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    if (venue.pricePerHour != null)
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text('₹${venue.pricePerHour!.toStringAsFixed(0)}/hr', style: AppTextStyles.labelLarge.copyWith(color: AppColors.primary, fontWeight: FontWeight.w700)),
+                      ),
+                    const SizedBox(height: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        gradient: isGoogle
+                            ? const LinearGradient(colors: [Color(0xFFFFD700), Color(0xFFFFA500)])
+                            : const LinearGradient(colors: AppColors.gradientPrimary),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        isGoogle ? 'Google Listed' : 'New Discovery',
+                        style: AppTextStyles.labelSmall.copyWith(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 9),
+                      ),
                     ),
-                    child: Text(
-                      isGoogle ? 'Google Listed' : 'New Discovery',
-                      style: AppTextStyles.labelSmall.copyWith(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 9),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ],
           ),

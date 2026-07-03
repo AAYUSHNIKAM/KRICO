@@ -176,10 +176,11 @@ class CoachAcademyJobsScreen extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 12),
-          Row(
+          Wrap(
+            spacing: 8,
+            runSpacing: 4,
             children: [
               _buildJobTag(Icons.work_history_rounded, experience, AppColors.info),
-              const SizedBox(width: 8),
               if (perks.isNotEmpty)
                 _buildJobTag(Icons.card_giftcard_rounded, perks, AppColors.accent),
             ],

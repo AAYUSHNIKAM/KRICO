@@ -5,7 +5,6 @@ import '../models/chat_model.dart';
 import '../models/coach_model.dart';
 import '../models/contract_model.dart';
 import '../models/player_model.dart';
-import '../models/user_model.dart';
 import '../models/venue_model.dart';
 import 'firebase_service.dart';
 import 'venue_service.dart';

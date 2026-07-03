@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -53,15 +52,14 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                   ),
                 ),
                 padding: const EdgeInsets.fromLTRB(20, 48, 20, 12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Text('Messages', style: AppTextStyles.headlineMedium.copyWith(color: Colors.white, fontWeight: FontWeight.w700)),
-                    const SizedBox(height: 8),
-                    ConstrainedBox(
-                      constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width - 40),
-                      child: Container(
+                child: LayoutBuilder(
+                  builder: (context, constraints) => Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Text('Messages', style: AppTextStyles.headlineMedium.copyWith(color: Colors.white, fontWeight: FontWeight.w700)),
+                      const SizedBox(height: 8),
+                      Container(
                         decoration: BoxDecoration(
                           color: Colors.white.withValues(alpha: 0.08),
                           borderRadius: BorderRadius.circular(14),
@@ -99,8 +97,8 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -262,7 +260,9 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                             maxLines: 1, overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        Text(timeStr, style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary, fontSize: 11)),
+                        Flexible(
+                          child: Text(timeStr, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary, fontSize: 11)),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 4),
@@ -280,15 +280,18 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                           ),
                         ),
                         if (hasUnread)
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: AppColors.primary,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Text(
-                              unreadCount > 99 ? '99+' : unreadCount.toString(),
-                              style: AppTextStyles.labelSmall.copyWith(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 4),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(
+                                unreadCount > 99 ? '99+' : unreadCount.toString(),
+                                style: AppTextStyles.labelSmall.copyWith(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700),
+                              ),
                             ),
                           ),
                       ],

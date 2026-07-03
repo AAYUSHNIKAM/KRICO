@@ -312,7 +312,7 @@ class _CoachDashboardContent extends ConsumerWidget {
       child: sessionsAsync.when(
         data: (snapshot) {
           final sessions = snapshot.docs;
-          final sorted = List<QueryDocumentSnapshot<Map<String, dynamic>>>.from(sessions)
+          final sorted = [...sessions]
             ..sort((a, b) {
               final aTime = (a.data()['dateTime'] as Timestamp?)?.toDate();
               final bTime = (b.data()['dateTime'] as Timestamp?)?.toDate();

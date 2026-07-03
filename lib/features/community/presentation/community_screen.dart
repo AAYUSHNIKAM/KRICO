@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -274,14 +273,17 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                     ],
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: avatarColor.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(6),
+                Flexible(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: avatarColor.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(user.role.name[0].toUpperCase() + user.role.name.substring(1),
+                        maxLines: 1, overflow: TextOverflow.ellipsis,
+                        style: TextStyle(color: avatarColor, fontSize: 9, fontWeight: FontWeight.w600)),
                   ),
-                  child: Text(user.role.name[0].toUpperCase() + user.role.name.substring(1),
-                      style: TextStyle(color: avatarColor, fontSize: 9, fontWeight: FontWeight.w600)),
                 ),
               ],
             ),
