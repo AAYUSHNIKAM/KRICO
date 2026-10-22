@@ -1,8 +1,10 @@
+import '../../services/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../models/user_model.dart';
 import '../../providers/auth_provider.dart';
+import '../../core/routing/app_router.dart';
 import '../../core/theme/theme_provider.dart';
 import '../colors/app_colors.dart';
 import '../typography/text_styles.dart';
@@ -16,6 +18,18 @@ import 'premium_top_bar.dart';
 import 'premium_sidebar.dart';
 import 'premium_drawer.dart';
 import 'bottom_nav.dart';
+import 'lazy_tab_stack.dart';
+
+class WorkspaceNavigation extends InheritedWidget {
+  const WorkspaceNavigation({super.key, required this.select, required super.child});
+  final ValueChanged<int> select;
+
+  static void go(BuildContext context, int index) =>
+      context.dependOnInheritedWidgetOfExactType<WorkspaceNavigation>()?.select(index);
+
+  @override
+  bool updateShouldNotify(WorkspaceNavigation oldWidget) => select != oldWidget.select;
+}
 
 class PremiumShell extends ConsumerStatefulWidget {
   final List<PremiumNavItem> navItems;
@@ -43,13 +57,10 @@ class _PremiumShellState extends ConsumerState<PremiumShell> {
   int _currentIndex = 0;
   bool _drawerOpen = false;
 
-  late final List<Widget> _screens;
-
   @override
   void initState() {
     super.initState();
     _currentIndex = widget.initialIndex;
-    _screens = List.from(widget.screens);
   }
 
   void _onNavChanged(int index) {
@@ -66,6 +77,10 @@ class _PremiumShellState extends ConsumerState<PremiumShell> {
 
   @override
   Widget build(BuildContext context) {
+    return WorkspaceNavigation(select: _onNavChanged, child: _buildLayout(context));
+  }
+
+  Widget _buildLayout(BuildContext context) {
     if (context.isDesktop) {
       return _buildDesktopLayout();
     } else if (context.isTablet) {
@@ -91,9 +106,9 @@ class _PremiumShellState extends ConsumerState<PremiumShell> {
                   children: [
                     PremiumTopBar(onMenuTap: null),
                     Expanded(
-                      child: IndexedStack(
+                      child: LazyTabStack(
                         index: _currentIndex,
-                        children: _screens,
+                        children: widget.screens,
                       ),
                     ),
                   ],
@@ -122,9 +137,9 @@ class _PremiumShellState extends ConsumerState<PremiumShell> {
                   children: [
                     PremiumTopBar(onMenuTap: null),
                     Expanded(
-                      child: IndexedStack(
+                      child: LazyTabStack(
                         index: _currentIndex,
-                        children: _screens,
+                        children: widget.screens,
                       ),
                     ),
                   ],
@@ -148,37 +163,243 @@ class _PremiumShellState extends ConsumerState<PremiumShell> {
       );
     }).toList();
 
+    final isPrimaryTab = widget.bottomNavIndices.contains(_currentIndex);
+    final userId = ref.watch(authStateProvider).value?.uid ?? widget.userModel.uid;
+    final unreadNotificationsCount = userId.isNotEmpty
+        ? ref.watch(unreadNotificationsProvider(userId))
+        : 0;
+
     return PopScope(
-      canPop: _currentIndex == 0,
+      canPop: _currentIndex == 0 && !_drawerOpen,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) setState(() => _currentIndex = 0);
+        if (!didPop) {
+          if (_drawerOpen) {
+            _closeDrawer();
+          } else {
+            _onNavChanged(0);
+          }
+        }
       },
       child: Scaffold(
         appBar: AppBar(
-          leading: IconButton(
-            icon: const Icon(AppIcons.menu),
-            onPressed: _toggleDrawer,
-            style: IconButton.styleFrom(
-              minimumSize: const Size(48, 48),
-            ),
-          ),
-          title: Text(
-            widget.navItems[_currentIndex].label,
-            style: AppTextStyles.title1.copyWith(
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? AppColors.textPrimary
-                  : AppColors.lightTextPrimary,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+          toolbarHeight: 72,
+          leading: !isPrimaryTab
+              ? IconButton(
+                  tooltip: 'Back to main',
+                  icon: Icon(
+                    Icons.arrow_back,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? AppColors.textPrimary
+                        : AppColors.lightTextPrimary,
+                  ),
+                  onPressed: () => _onNavChanged(0),
+                  style: IconButton.styleFrom(
+                    minimumSize: const Size(48, 48),
+                  ),
+                )
+              : IconButton(
+                  tooltip: 'All tools and settings',
+                  icon: Icon(
+                    AppIcons.menu,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? AppColors.textPrimary
+                        : AppColors.lightTextPrimary,
+                  ),
+                  onPressed: _toggleDrawer,
+                  style: IconButton.styleFrom(
+                    minimumSize: const Size(48, 48),
+                  ),
+                ),
+          titleSpacing: 8,
+          title: _currentIndex == 0
+              ? ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 190),
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [AppColors.primary, AppColors.emerald],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: AppRadius.brMd,
+                          ),
+                          child: const Text(
+                            'KRICO',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 1.2,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: SpacingScale.s6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).brightness == Brightness.dark
+                                ? AppColors.surfaceSecondary
+                                : AppColors.lightSurfaceSecondary,
+                            borderRadius: AppRadius.brSm,
+                            border: Border.all(
+                              color: Theme.of(context).brightness == Brightness.dark
+                                  ? AppColors.border
+                                  : AppColors.lightBorder,
+                              width: 0.5,
+                            ),
+                          ),
+                          child: Text(
+                            widget.roleLabel.replaceAll(' workspace', '').toUpperCase(),
+                            style: TextStyle(
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.5,
+                              color: Theme.of(context).brightness == Brightness.dark
+                                  ? AppColors.textSecondary
+                                  : AppColors.lightTextSecondary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              : Text(
+                  widget.navItems[_currentIndex].label,
+                  style: AppTextStyles.title1.copyWith(
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? AppColors.textPrimary
+                        : AppColors.lightTextPrimary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
           elevation: 0,
           scrolledUnderElevation: 0,
-          backgroundColor: Colors.transparent,
+          backgroundColor: Theme.of(context).brightness == Brightness.dark
+              ? AppColors.surface
+              : AppColors.lightSurface,
           surfaceTintColor: Colors.transparent,
+          shape: Border(
+            bottom: BorderSide(
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? AppColors.border
+                  : AppColors.lightBorder,
+              width: 0.5,
+            ),
+          ),
+          actions: [
+            Container(
+              margin: const EdgeInsets.symmetric(vertical: 14),
+              decoration: BoxDecoration(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? AppColors.surfaceSecondary
+                    : AppColors.lightSurfaceSecondary,
+                borderRadius: AppRadius.brLg,
+                border: Border.all(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? AppColors.border
+                      : AppColors.lightBorder,
+                  width: 0.5,
+                ),
+              ),
+              child: IconButton(
+                padding: const EdgeInsets.all(8),
+                constraints: const BoxConstraints(),
+                icon: Icon(
+                  AppIcons.search,
+                  size: 18,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? AppColors.textPrimary
+                      : AppColors.lightTextPrimary,
+                ),
+                onPressed: () => context.push(AppRoutes.search),
+              ),
+            ),
+            const SizedBox(width: SpacingScale.s8),
+            Container(
+              margin: const EdgeInsets.symmetric(vertical: 14),
+              decoration: BoxDecoration(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? AppColors.surfaceSecondary
+                    : AppColors.lightSurfaceSecondary,
+                borderRadius: AppRadius.brLg,
+                border: Border.all(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? AppColors.border
+                      : AppColors.lightBorder,
+                  width: 0.5,
+                ),
+              ),
+              child: IconButton(
+                padding: const EdgeInsets.all(8),
+                constraints: const BoxConstraints(),
+                tooltip: 'Notifications',
+                icon: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Icon(
+                      Icons.notifications_none_rounded,
+                      size: 18,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? AppColors.textPrimary
+                          : AppColors.lightTextPrimary,
+                    ),
+                    if (unreadNotificationsCount > 0)
+                      Positioned(
+                        top: -2,
+                        right: -2,
+                        child: Container(
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: AppColors.volt,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: Theme.of(context).brightness == Brightness.dark
+                                  ? AppColors.background
+                                  : Colors.white,
+                              width: 1.5,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.volt.withValues(alpha: 0.8),
+                                blurRadius: 4,
+                                spreadRadius: 1,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                onPressed: () => context.push('/notifications'),
+              ),
+            ),
+            const SizedBox(width: SpacingScale.s8),
+            if (!isPrimaryTab)
+              IconButton(
+                tooltip: 'All tools and settings',
+                icon: Icon(
+                  AppIcons.menu,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? AppColors.textPrimary
+                      : AppColors.lightTextPrimary,
+                ),
+                onPressed: _toggleDrawer,
+              ),
+            const SizedBox(width: SpacingScale.s8),
+          ],
         ),
         body: Stack(
           children: [
-            IndexedStack(index: _currentIndex, children: widget.screens),
+            LazyTabStack(index: _currentIndex, children: widget.screens),
             if (_drawerOpen)
               GestureDetector(
                 onTap: _closeDrawer,
@@ -198,7 +419,7 @@ class _PremiumShellState extends ConsumerState<PremiumShell> {
         ),
         bottomNavigationBar: AppBottomNav(
           items: bottomNavItems,
-          selectedIndex: _currentIndex,
+          selectedIndex: widget.bottomNavIndices.indexOf(_currentIndex),
           onChanged: (i) => _onNavChanged(widget.bottomNavIndices[i]),
         ),
       ),
@@ -212,12 +433,23 @@ class _PremiumShellState extends ConsumerState<PremiumShell> {
       header: _buildSidebarHeader(isDark),
       footer: _buildSidebarFooter(isDark),
       children: [
-        ...List.generate(widget.navItems.length, (i) => PremiumSidebarTile(
+        ...List.generate(widget.navItems.length, (i) => Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+          if (i == 0 || widget.navItems[i].section != widget.navItems[i - 1].section)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
+              child: Text(widget.navItems[i].section.toUpperCase(),
+                style: Theme.of(context).textTheme.labelSmall),
+            ),
+          PremiumSidebarTile(
           icon: widget.navItems[i].icon,
           label: widget.navItems[i].label,
           selected: _currentIndex == i,
           badge: widget.navItems[i].badge,
           onTap: () => _onNavChanged(i),
+        ),
+        ],
         )),
       ],
     );
@@ -259,7 +491,7 @@ class _PremiumShellState extends ConsumerState<PremiumShell> {
             ),
             const SizedBox(width: SpacingScale.s10),
             Text(
-              'SportsEco',
+              'KRICO',
               style: AppTextStyles.title2.copyWith(color: textColor),
             ),
           ],
@@ -314,7 +546,7 @@ class _PremiumShellState extends ConsumerState<PremiumShell> {
         _buildFooterTile(
           icon: AppIcons.settings,
           label: 'Settings',
-          onTap: () {},
+          onTap: () => context.push(AppRoutes.settings, extra: widget.userModel),
           isDark: isDark,
         ),
         const SizedBox(height: 2),
@@ -325,7 +557,7 @@ class _PremiumShellState extends ConsumerState<PremiumShell> {
           label: 'Sign Out',
           onTap: () async {
             await ref.read(authServiceProvider).signOut();
-            if (context.mounted) context.go('/login');
+            if (mounted) context.go('/login');
           },
           isDark: isDark,
           isDanger: true,
@@ -341,7 +573,7 @@ class _PremiumShellState extends ConsumerState<PremiumShell> {
         PremiumCollapsedSidebarTile(
           icon: AppIcons.settings,
           tooltip: 'Settings',
-          onTap: () {},
+          onTap: () => context.push(AppRoutes.settings, extra: widget.userModel),
         ),
         const SizedBox(height: 2),
         PremiumCollapsedSidebarTile(
@@ -355,7 +587,7 @@ class _PremiumShellState extends ConsumerState<PremiumShell> {
           tooltip: 'Sign Out',
           onTap: () async {
             await ref.read(authServiceProvider).signOut();
-            if (context.mounted) context.go('/login');
+            if (mounted) context.go('/login');
           },
         ),
       ],
@@ -470,7 +702,7 @@ class _PremiumShellState extends ConsumerState<PremiumShell> {
                 ),
                 const SizedBox(width: SpacingScale.s10),
                 Text(
-                  'SportsEco',
+                  'KRICO',
                   style: AppTextStyles.title2.copyWith(color: textColor),
                 ),
               ],
@@ -517,9 +749,11 @@ class _PremiumShellState extends ConsumerState<PremiumShell> {
           ],
         ),
         sections: [
+          for (final section in widget.navItems.map((item) => item.section).toSet())
           PremiumDrawerSection(
-            title: 'Navigation',
-            items: List.generate(widget.navItems.length, (i) {
+            title: section,
+            items: List.generate(widget.navItems.length, (i) => i)
+                .where((i) => widget.navItems[i].section == section).map((i) {
               return PremiumDrawerItem(
                 icon: widget.navItems[i].icon,
                 label: widget.navItems[i].label,
@@ -530,7 +764,7 @@ class _PremiumShellState extends ConsumerState<PremiumShell> {
                   _closeDrawer();
                 },
               );
-            }),
+            }).toList(),
           ),
           PremiumDrawerSection(
             title: 'Preferences',
@@ -538,7 +772,10 @@ class _PremiumShellState extends ConsumerState<PremiumShell> {
               PremiumDrawerItem(
                 icon: AppIcons.settings,
                 label: 'Settings',
-                onTap: () {},
+                onTap: () {
+                  _closeDrawer();
+                  context.push(AppRoutes.settings, extra: widget.userModel);
+                },
               ),
             ],
           ),
@@ -553,7 +790,7 @@ class _PremiumShellState extends ConsumerState<PremiumShell> {
               label: 'Sign Out',
               onTap: () async {
                 await ref.read(authServiceProvider).signOut();
-                if (context.mounted) context.go('/login');
+                if (mounted) context.go('/login');
               },
               isDark: isDark,
               isDanger: true,

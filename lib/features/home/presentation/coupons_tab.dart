@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_text_styles.dart';
-import '../../../core/widgets/gradient_button.dart';
-import '../../../core/widgets/section_header.dart';
+import '../../../design_system/colors/app_colors.dart';
+import '../../../design_system/typography/text_styles.dart';
+import '../../../design_system/radius/radius.dart';
+import '../../../design_system/spacing/spacing_scale.dart';
+import '../../../design_system/widgets/page_headers/page_hero.dart';
 import '../../../services/providers.dart';
 import '../../../providers/auth_provider.dart';
 
@@ -51,7 +52,7 @@ class _CouponsTabState extends ConsumerState<CouponsTab> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed: $e'), backgroundColor: AppColors.error),
+          SnackBar(content: Text('Failed: $e'), backgroundColor: AppColors.danger),
         );
       }
     } finally {
@@ -62,46 +63,24 @@ class _CouponsTabState extends ConsumerState<CouponsTab> {
   @override
   Widget build(BuildContext context) {
     final couponsAsync = ref.watch(couponsProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       body: CustomScrollView(
         slivers: [
-          SliverAppBar(
+          PageHero(
+            title: 'Coupons',
+            subtitle: 'Manage discounts and promotions',
+            backgroundColor: AppColors.primary,
             expandedHeight: 120,
-            pinned: true,
-            flexibleSpace: FlexibleSpaceBar(
-              background: Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: AppColors.gradientGold,
-                  ),
-                ),
-                padding: EdgeInsets.fromLTRB(
-                    20, MediaQuery.of(context).padding.top + 16, 20, 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Text('Coupons',
-                        style: AppTextStyles.headlineMedium.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w700)),
-                    Text('Manage discounts and promotions',
-                        style: AppTextStyles.bodySmall.copyWith(
-                            color: Colors.white.withValues(alpha: 0.7))),
-                  ],
-                ),
-              ),
-            ),
           ),
           SliverPadding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+            padding: const EdgeInsets.fromLTRB(
+                SpacingScale.s16, SpacingScale.s16, SpacingScale.s16, SpacingScale.s32),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-                _buildCreateCouponCard(),
-                const SizedBox(height: 16),
+                _buildCreateCouponCard(isDark: isDark),
+                const SizedBox(height: SpacingScale.s16),
                 Animate(
                   effects: const [
                     FadeEffect(duration: Duration(milliseconds: 400)),
@@ -110,23 +89,43 @@ class _CouponsTabState extends ConsumerState<CouponsTab> {
                         end: Offset.zero,
                         duration: Duration(milliseconds: 400)),
                   ],
-                  child: const SectionHeader(title: 'Active Coupons'),
+                  child: Row(children: [
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.12),
+                        borderRadius: AppRadius.brLg,
+                      ),
+                      child: const Icon(Icons.list_alt_rounded, size: 18, color: AppColors.primary),
+                    ),
+                    const SizedBox(width: SpacingScale.s10),
+                    Text(
+                      'Active Coupons',
+                      style: AppTextStyles.title2.copyWith(
+                        color: isDark ? AppColors.textPrimary : AppColors.lightTextPrimary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ]),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: SpacingScale.s8),
                 couponsAsync.when(
                   data: (snap) {
                     final docs = snap.docs;
                     if (docs.isEmpty) {
                       return Container(
-                        padding: const EdgeInsets.all(24),
+                        padding: const EdgeInsets.all(SpacingScale.s16),
                         decoration: BoxDecoration(
-                          color: AppColors.cardDark,
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: AppColors.borderLight),
+                          color: isDark ? AppColors.card : AppColors.lightCard,
+                          borderRadius: AppRadius.brXl3,
+                          border: Border.all(
+                              color: isDark ? AppColors.border : AppColors.lightBorder, width: 0.5),
                         ),
                         child: Center(
                           child: Text('No coupons yet',
-                              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textDim)),
+                              style: AppTextStyles.body.copyWith(
+                                  color: isDark ? AppColors.textTertiary : AppColors.lightTextTertiary)),
                         ),
                       );
                     }
@@ -135,6 +134,7 @@ class _CouponsTabState extends ConsumerState<CouponsTab> {
                         final data = doc.data();
                         return _buildCouponCard(
                           context: context,
+                          isDark: isDark,
                           docId: doc.id,
                           code: data['code'] as String? ?? '',
                           discount: data['discount'] as String? ?? '',
@@ -146,7 +146,8 @@ class _CouponsTabState extends ConsumerState<CouponsTab> {
                   },
                   loading: () => const Center(child: CircularProgressIndicator()),
                   error: (e, _) => Center(
-                    child: Text('Failed to load coupons', style: TextStyle(color: AppColors.error)),
+                    child: Text('Failed to load coupons',
+                        style: TextStyle(color: AppColors.danger)),
                   ),
                 ),
               ]),
@@ -157,84 +158,116 @@ class _CouponsTabState extends ConsumerState<CouponsTab> {
     );
   }
 
-  Widget _buildCreateCouponCard() {
+  Widget _buildCreateCouponCard({required bool isDark}) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(SpacingScale.s16),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppColors.gold.withValues(alpha: 0.05),
-            AppColors.primary.withValues(alpha: 0.05),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.gold.withValues(alpha: 0.2)),
+        color: isDark ? AppColors.card : AppColors.lightCard,
+        borderRadius: AppRadius.brXl3,
+        border: Border.all(
+            color: isDark ? AppColors.border : AppColors.lightBorder, width: 0.5),
       ),
       child: Column(
         children: [
           Row(
             children: [
-              const Icon(Icons.local_offer_rounded,
-                  color: AppColors.gold),
-              const SizedBox(width: 8),
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: AppColors.gold.withValues(alpha: 0.12),
+                  borderRadius: AppRadius.brLg,
+                ),
+                child: const Icon(Icons.local_offer_rounded,
+                    size: 18, color: AppColors.gold),
+              ),
+              const SizedBox(width: SpacingScale.s10),
               Text('Create New Coupon',
-                  style: AppTextStyles.titleSmall
-                      .copyWith(fontWeight: FontWeight.w600)),
+                  style: AppTextStyles.title3.copyWith(
+                      color: isDark ? AppColors.textPrimary : AppColors.lightTextPrimary,
+                      fontWeight: FontWeight.w600)),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: SpacingScale.s12),
           Row(
             children: [
               Expanded(
                 child: TextField(
                   controller: _codeCtrl,
+                  style: AppTextStyles.body.copyWith(
+                      color: isDark ? AppColors.textPrimary : AppColors.lightTextPrimary),
                   decoration: InputDecoration(
                     hintText: 'Coupon code',
-                    hintStyle: TextStyle(
-                        color: AppColors.textDim, fontSize: 13),
+                    hintStyle: AppTextStyles.bodySm.copyWith(
+                        color: isDark ? AppColors.textTertiary : AppColors.lightTextTertiary),
                     filled: true,
-                    fillColor: AppColors.surfaceDark,
+                    fillColor: isDark ? AppColors.surface : AppColors.lightSurfaceSecondary,
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: AppRadius.brXl2,
                       borderSide: BorderSide.none,
                     ),
                     contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 10),
+                        horizontal: SpacingScale.s12, vertical: SpacingScale.s10),
                   ),
-                  style: const TextStyle(fontSize: 13),
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: SpacingScale.s8),
               Expanded(
                 child: TextField(
                   controller: _discountCtrl,
+                  style: AppTextStyles.body.copyWith(
+                      color: isDark ? AppColors.textPrimary : AppColors.lightTextPrimary),
                   decoration: InputDecoration(
                     hintText: 'Discount',
-                    hintStyle: TextStyle(
-                        color: AppColors.textDim, fontSize: 13),
+                    hintStyle: AppTextStyles.bodySm.copyWith(
+                        color: isDark ? AppColors.textTertiary : AppColors.lightTextTertiary),
                     filled: true,
-                    fillColor: AppColors.surfaceDark,
+                    fillColor: isDark ? AppColors.surface : AppColors.lightSurfaceSecondary,
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: AppRadius.brXl2,
                       borderSide: BorderSide.none,
                     ),
                     contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 10),
+                        horizontal: SpacingScale.s12, vertical: SpacingScale.s10),
                   ),
-                  style: const TextStyle(fontSize: 13),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          GradientButton(
-            onPressed: _isCreating ? null : _createCoupon,
-            height: 40,
-            isLoading: _isCreating,
-            child: const Text('Create Coupon',
-                style: TextStyle(color: Colors.white, fontSize: 13)),
+          const SizedBox(height: SpacingScale.s12),
+          MouseRegion(
+            cursor: _isCreating ? SystemMouseCursors.wait : SystemMouseCursors.click,
+            child: GestureDetector(
+              onTap: _isCreating ? null : _createCoupon,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: SpacingScale.s12),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                      colors: [AppColors.primary, AppColors.primaryLight]),
+                  borderRadius: AppRadius.brXl2,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (_isCreating)
+                      const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: Colors.white),
+                      )
+                    else
+                      const Icon(Icons.add_rounded, size: 16, color: Colors.white),
+                    const SizedBox(width: SpacingScale.s8),
+                    Text(
+                      _isCreating ? 'Creating...' : 'Create Coupon',
+                      style: AppTextStyles.label.copyWith(color: Colors.white),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
         ],
       ),
@@ -243,20 +276,22 @@ class _CouponsTabState extends ConsumerState<CouponsTab> {
 
   Widget _buildCouponCard({
     required BuildContext context,
+    required bool isDark,
     required String docId,
     required String code,
     required String discount,
     required String eligibility,
     required bool isActive,
   }) {
-    final statusColor = isActive ? AppColors.success : AppColors.error;
+    final statusColor = isActive ? AppColors.success : AppColors.danger;
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(14),
+      margin: const EdgeInsets.only(bottom: SpacingScale.s8),
+      padding: const EdgeInsets.all(SpacingScale.s16),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.borderLight),
+        color: isDark ? AppColors.card : AppColors.lightCard,
+        borderRadius: AppRadius.brXl3,
+        border: Border.all(
+            color: isDark ? AppColors.border : AppColors.lightBorder, width: 0.5),
       ),
       child: Row(
         children: [
@@ -265,12 +300,12 @@ class _CouponsTabState extends ConsumerState<CouponsTab> {
             height: 44,
             decoration: BoxDecoration(
               color: AppColors.gold.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: AppRadius.brLg,
             ),
             child: const Icon(Icons.local_offer_rounded,
                 color: AppColors.gold, size: 22),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: SpacingScale.s12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -278,29 +313,31 @@ class _CouponsTabState extends ConsumerState<CouponsTab> {
                 Row(
                   children: [
                     Text(code,
-                        style: AppTextStyles.titleSmall.copyWith(
+                        style: AppTextStyles.title3.copyWith(
+                            color: isDark ? AppColors.textPrimary : AppColors.lightTextPrimary,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 1)),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: SpacingScale.s8),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 2),
+                          horizontal: SpacingScale.s6, vertical: 2),
                       decoration: BoxDecoration(
                         color: statusColor.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(4),
+                        borderRadius: AppRadius.brSm,
                       ),
                       child: Text(isActive ? 'Active' : 'Expired',
-                          style: AppTextStyles.overline.copyWith(
+                          style: AppTextStyles.labelSm.copyWith(
                               color: statusColor,
-                              fontSize: 9,
                               fontWeight: FontWeight.w600)),
                     ),
                   ],
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: SpacingScale.s2),
                 Text('$discount · $eligibility',
-                    style: AppTextStyles.caption
-                        .copyWith(color: AppColors.textSecondary)),
+                    style: AppTextStyles.body.copyWith(
+                        color: isDark
+                            ? AppColors.textSecondary
+                            : AppColors.lightTextSecondary)),
               ],
             ),
           ),
@@ -311,6 +348,10 @@ class _CouponsTabState extends ConsumerState<CouponsTab> {
                 ref.read(authServiceProvider).toggleCouponStatus(docId, val);
               },
               activeThumbColor: AppColors.success,
+              activeTrackColor: AppColors.success.withValues(alpha: 0.3),
+              inactiveTrackColor: isDark
+                  ? AppColors.surface
+                  : AppColors.lightSurfaceSecondary,
             ),
         ],
       ),

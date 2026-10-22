@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
-import '../theme/app_colors.dart';
+import '../../design_system/colors/app_colors.dart';
 
 class LoadingShimmer extends StatelessWidget {
   const LoadingShimmer({

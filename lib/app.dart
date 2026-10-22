@@ -3,16 +3,24 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_provider.dart';
 import 'core/routing/app_router.dart';
+import 'package:go_router/go_router.dart';
 
-class SportsEcoApp extends ConsumerWidget {
-  const SportsEcoApp({super.key});
+/// Built once per app instance so theme or auth rebuilds never reset navigation.
+final appRouterProvider = Provider<GoRouter>((ref) {
+  final router = buildRouter();
+  ref.onDispose(router.dispose);
+  return router;
+});
+
+class KricoApp extends ConsumerWidget {
+  const KricoApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final router = buildRouter(ref);
+    final router = ref.watch(appRouterProvider);
     final themeMode = ref.watch(themeModeProvider);
     return MaterialApp.router(
-      title: 'SportsEco',
+      title: 'KRICO',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
@@ -21,3 +29,6 @@ class SportsEcoApp extends ConsumerWidget {
     );
   }
 }
+
+/// Backwards compatibility alias for existing test suites
+typedef SportsEcoApp = KricoApp;

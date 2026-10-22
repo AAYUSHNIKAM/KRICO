@@ -1,0 +1,1479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KRICO - 15 Certificate Milestone Showcase (PDF & UI)</title>
+  <style>
+    :root {
+      --bg-dark: #0b0f19;
+      --card-bg: #131c2e;
+      --card-border: #1e293b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-gold: #f59e0b;
+      --accent-cyan: #38bdf8;
+      --accent-bronze: #cd7f32;
+      --accent-silver: #cbd5e1;
+      --accent-platinum: #38bdf8;
+      --accent-obsidian: #a855f7;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: radial-gradient(circle at 50% 0%, #172554 0%, #0b0f19 50%, #020617 100%);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 32px 20px 80px;
+    }
+
+    .container {
+      max-width: 1440px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      border-radius: 9999px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #fbbf24;
+      margin-bottom: 14px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      font-size: 38px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-bottom: 12px;
+      background: linear-gradient(135deg, #ffffff 30%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    p.subtitle {
+      font-size: 16px;
+      color: var(--text-muted);
+      max-width: 780px;
+      margin: 0 auto 20px;
+      line-height: 1.6;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin: 28px 0;
+    }
+
+    .stat-card {
+      background: rgba(30, 41, 59, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      padding: 16px 20px;
+      border-radius: 12px;
+      text-align: left;
+      backdrop-filter: blur(10px);
+    }
+
+    .stat-card .label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+    }
+
+    .stat-card .val {
+      font-size: 22px;
+      font-weight: 700;
+      color: #ffffff;
+      margin-top: 4px;
+    }
+
+    /* Filter Toolbar */
+    .toolbar {
+      position: sticky;
+      top: 16px;
+      z-index: 50;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(16px);
+      padding: 14px 20px;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 36px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+    }
+
+    .filter-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .filter-btn {
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .filter-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+    }
+
+    .filter-btn.active {
+      background: #3b82f6;
+      border-color: #60a5fa;
+      color: #fff;
+    }
+
+    .view-toggle {
+      display: flex;
+      border-radius: 8px;
+      background: rgba(0, 0, 0, 0.35);
+      padding: 3px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .toggle-btn {
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: transparent;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .toggle-btn.active {
+      background: rgba(255, 255, 255, 0.15);
+      color: #fff;
+    }
+
+    /* Certificate Cards */
+    .tier-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+    }
+
+    .tier-card {
+      background: var(--card-bg);
+      border-radius: 20px;
+      border: 1px solid var(--card-border);
+      overflow: hidden;
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7);
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .tier-card:hover {
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+
+    .card-header {
+      padding: 22px 28px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .card-title-group {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .tier-badge-icon {
+      font-size: 32px;
+      width: 54px;
+      height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .tier-meta h2 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .tier-num {
+      font-size: 13px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      color: #94a3b8;
+    }
+
+    .latin-motto-tag {
+      font-style: italic;
+      font-size: 13px;
+      color: #cbd5e1;
+      margin-top: 4px;
+      letter-spacing: 0.3px;
+    }
+
+    .card-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .xp-pill {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .btn-download-pdf {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      background: #2563eb;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+
+    .btn-download-pdf:hover {
+      background: #1d4ed8;
+    }
+
+    /* Comparison Area */
+    .card-body {
+      padding: 24px 28px;
+    }
+
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.35fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 1024px) {
+      .comparison-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .preview-column {
+      background: #090e18;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .preview-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .preview-title {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .preview-img-container {
+      position: relative;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #000;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .preview-img-container img {
+      width: 100%;
+      height: auto;
+      display: block;
+      transition: transform 0.3s ease;
+    }
+
+    .preview-img-container:hover img {
+      transform: scale(1.02);
+    }
+
+    .zoom-hint {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      background: rgba(0, 0, 0, 0.7);
+      color: #fff;
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      backdrop-filter: blur(4px);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .preview-img-container:hover .zoom-hint {
+      opacity: 1;
+    }
+
+    /* Metadata details */
+    .tier-details-table {
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      font-size: 13px;
+    }
+
+    .detail-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .detail-item .d-label {
+      color: var(--text-muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .detail-item .d-val {
+      color: #e2e8f0;
+      font-weight: 500;
+    }
+
+    /* Modal Lightbox */
+    .lightbox {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.92);
+      backdrop-filter: blur(10px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .lightbox.active {
+      display: flex;
+    }
+
+    .lightbox-content {
+      position: relative;
+      max-width: 95vw;
+      max-height: 95vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 85vh;
+      border-radius: 8px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .lightbox-caption {
+      margin-top: 14px;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .lightbox-close {
+      position: absolute;
+      top: -40px;
+      right: 0;
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 32px;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    /* Theme border accents */
+    .theme-bronze { border-top: 4px solid #cd7f32; }
+    .theme-silver { border-top: 4px solid #cbd5e1; }
+    .theme-gold   { border-top: 4px solid #f59e0b; }
+    .theme-platinum { border-top: 4px solid #38bdf8; }
+    .theme-obsidian { border-top: 4px solid #a855f7; }
+
+    /* Hide states for view toggle */
+    .hide-ui .ui-col { display: none !important; }
+    .hide-pdf .pdf-col { display: none !important; }
+    .hide-ui .comparison-grid, .hide-pdf .comparison-grid { grid-template-columns: 1fr; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <div class="badge-pill">🏆 Official KRICO (Krida + Coach) Athlete Achievement Registry</div>
+    <h1>15 Certificate Milestone Showcase</h1>
+    <p class="subtitle">
+      Inspect all 15 certificate milestone templates generated for both the <strong>Interactive In-App UI Dialog</strong> and the <strong>Official Vector PDF Document</strong>. Each level features escalating architectural borders, seals, Latin mottos, and signatory credentials.
+    </p>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="label">Total Certificate Milestones</div>
+        <div class="val">15 Tiers</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">XP Milestone Span</div>
+        <div class="val">100 &rarr; 25,000 XP</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Progressive Decoration Engine</div>
+        <div class="val">5 Architectural Levels</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Dual Snapshots</div>
+        <div class="val">30 High-Res Snapshots</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Navigation / Filters -->
+  <div class="toolbar">
+    <div class="filter-group">
+      <button class="filter-btn active" onclick="filterTier('all', this)">All 15 Tiers</button>
+      <button class="filter-btn" onclick="filterTier('bronze', this)">🥉 Bronze (Tiers 1-2)</button>
+      <button class="filter-btn" onclick="filterTier('silver', this)">🥈 Silver (Tiers 3-5)</button>
+      <button class="filter-btn" onclick="filterTier('gold', this)">🥇 Gold (Tiers 6-8)</button>
+      <button class="filter-btn" onclick="filterTier('platinum', this)">💎 Platinum (Tiers 9-12)</button>
+      <button class="filter-btn" onclick="filterTier('obsidian', this)">👑 Hall of Fame (Tiers 13-15)</button>
+    </div>
+
+    <div class="view-toggle">
+      <button class="toggle-btn active" onclick="setViewMode('both', this)">Side-by-Side</button>
+      <button class="toggle-btn" onclick="setViewMode('pdf', this)">PDF Only</button>
+      <button class="toggle-btn" onclick="setViewMode('ui', this)">UI Modal Only</button>
+    </div>
+  </div>
+
+  <!-- Certificate Cards Container -->
+  <div class="tier-cards" id="tierCardsContainer">
+
+    <!-- TIER 01 -->
+    <div class="tier-card theme-bronze" data-theme="bronze">
+      <div class="card-header">
+        <div class="card-title-group">
+          <div class="tier-badge-icon">🥉</div>
+          <div class="tier-meta">
+            <h2><span class="tier-num">Tier 01</span> Foundational Athlete</h2>
+            <div class="latin-motto-tag">&ldquo;Gradus Primus Virtutis&rdquo; &bull; Foundation Accredited</div>
+          </div>
+        </div>
+        <div class="card-actions">
+          <div class="xp-pill">100 XP</div>
+          <a class="btn-download-pdf" href="pdfs/tier_01_foundational_athlete.pdf" target="_blank" download>Download PDF</a>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="comparison-grid">
+          <div class="preview-column ui-col">
+            <div class="preview-header">
+              <span class="preview-title">📱 In-App UI Dialog</span>
+              <span style="font-size: 11px; color: var(--text-muted);">Interactive Modal</span>
+            </div>
+            <div class="preview-img-container" onclick="openLightbox('ui_snapshots/tier_01_foundational_athlete.png', 'Tier 01: Foundational Athlete (In-App UI Modal)')">
+              <img src="ui_snapshots/tier_01_foundational_athlete.png" alt="Tier 01 UI Modal">
+              <span class="zoom-hint">🔍 Click to zoom</span>
+            </div>
+          </div>
+          <div class="preview-column pdf-col">
+            <div class="preview-header">
+              <span class="preview-title">📄 Official Vector PDF</span>
+              <span style="font-size: 11px; color: var(--text-muted);">Landscape 300-DPI Vector</span>
+            </div>
+            <div class="preview-img-container" onclick="openLightbox('pdf_snapshots/tier_01_foundational_athlete.png', 'Tier 01: Foundational Athlete (Official Vector PDF)')">
+              <img src="pdf_snapshots/tier_01_foundational_athlete.png" alt="Tier 01 PDF Snapshot">
+              <span class="zoom-hint">🔍 Click to zoom</span>
+            </div>
+          </div>
+        </div>
+        <div class="tier-details-table">
+          <div class="detail-item">
+            <span class="d-label">Architecture Level</span>
+            <span class="d-val">Level 1: Minimalist Clean Single Frame (Bronze)</span>
+          </div>
+          <div class="detail-item">
+            <span class="d-label">Header & Title</span>
+            <span class="d-val">SPORTSECO FOUNDATIONAL ACCREDITATION &bull; CERTIFICATE OF ATHLETIC INITIATION</span>
+          </div>
+          <div class="detail-item">
+            <span class="d-label">Accredited Seal</span>
+            <span class="d-val">OFFICIAL INITIATE SEAL</span>
+          </div>
+          <div class="detail-item">
+            <span class="d-label">Signatories</span>
+            <span class="d-val">Accredited Lead Coach</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TIER 02 -->
+    <div class="tier-card theme-bronze" data-theme="bronze">
+      <div class="card-header">
+        <div class="card-title-group">
+          <div class="tier-badge-icon">🌿</div>
+          <div class="tier-meta">
+            <h2><span class="tier-num">Tier 02</span> Dedicated Trainee</h2>
+            <div class="latin-motto-tag">&ldquo;Assiduitas et Constantia&rdquo; &bull; Consistency Verified</div>
+          </div>
+        </div>
+        <div class="card-actions">
+          <div class="xp-pill">300 XP</div>
+          <a class="btn-download-pdf" href="pdfs/tier_02_dedicated_trainee.pdf" target="_blank" download>Download PDF</a>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="comparison-grid">
+          <div class="preview-column ui-col">
+            <div class="preview-header">
+              <span class="preview-title">📱 In-App UI Dialog</span>
+              <span style="font-size: 11px; color: var(--text-muted);">Interactive Modal</span>
+            </div>
+            <div class="preview-img-container" onclick="openLightbox('ui_snapshots/tier_02_dedicated_trainee.png', 'Tier 02: Dedicated Trainee (In-App UI Modal)')">
+              <img src="ui_snapshots/tier_02_dedicated_trainee.png" alt="Tier 02 UI Modal">
+              <span class="zoom-hint">🔍 Click to zoom</span>
+            </div>
+          </div>
+          <div class="preview-column pdf-col">
+            <div class="preview-header">
+              <span class="preview-title">📄 Official Vector PDF</span>
+              <span style="font-size: 11px; color: var(--text-muted);">Landscape 300-DPI Vector</span>
+            </div>
+            <div class="preview-img-container" onclick="openLightbox('pdf_snapshots/tier_02_dedicated_trainee.png', 'Tier 02: Dedicated Trainee (Official Vector PDF)')">
+              <img src="pdf_snapshots/tier_02_dedicated_trainee.png" alt="Tier 02 PDF Snapshot">
+              <span class="zoom-hint">🔍 Click to zoom</span>
+            </div>
+          </div>
+        </div>
+        <div class="tier-details-table">
+          <div class="detail-item">
+            <span class="d-label">Architecture Level</span>
+            <span class="d-val">Level 1: Minimalist Clean Single Frame (Bronze)</span>
+          </div>
+          <div class="detail-item">
+            <span class="d-label">Header & Title</span>
+            <span class="d-val">SPORTSECO FOUNDATIONAL ACCREDITATION &bull; CERTIFICATE OF TRAINING DISCIPLINE</span>
+          </div>
+          <div class="detail-item">
+            <span class="d-label">Accredited Seal</span>
+            <span class="d-val">CONSISTENCY VERIFIED SEAL</span>
+          </div>
+          <div class="detail-item">
+            <span class="d-label">Signatories</span>
+            <span class="d-val">Accredited Lead Coach</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TIER 03 -->
+    <div class="tier-card theme-silver" data-theme="silver">
+      <div class="card-header">
+        <div class="card-title-group">
+          <div class="tier-badge-icon">🥈</div>
+          <div class="tier-meta">
+            <h2><span class="tier-num">Tier 03</span> Rising Competitor</h2>
+            <div class="latin-motto-tag">&ldquo;In Proelio Crescit&rdquo; &bull; Tactical Competence</div>
+          </div>
+        </div>
+        <div class="card-actions">
+          <div class="xp-pill">600 XP</div>
+          <a class="btn-download-pdf" href="pdfs/tier_03_rising_competitor.pdf" target="_blank" download>Download PDF</a>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="comparison-grid">
+          <div class="preview-column ui-col">
+            <div class="preview-header">
+              <span class="preview-title">📱 In-App UI Dialog</span>
+              <span style="font-size: 11px; color: var(--text-muted);">Interactive Modal</span>
+            </div>
+            <div class="preview-img-container" onclick="openLightbox('ui_snapshots/tier_03_rising_competitor.png', 'Tier 03: Rising Competitor (In-App UI Modal)')">
+              <img src="ui_snapshots/tier_03_rising_competitor.png" alt="Tier 03 UI Modal">
+              <span class="zoom-hint">🔍 Click to zoom</span>
+            </div>
+          </div>
+          <div class="preview-column pdf-col">
+            <div class="preview-header">
+              <span class="preview-title">📄 Official Vector PDF</span>
+              <span style="font-size: 11px; color: var(--text-muted);">Landscape 300-DPI Vector</span>
+            </div>
+            <div class="preview-img-container" onclick="openLightbox('pdf_snapshots/tier_03_rising_competitor.png', 'Tier 03: Rising Competitor (Official Vector PDF)')">
+              <img src="pdf_snapshots/tier_03_rising_competitor.png" alt="Tier 03 PDF Snapshot">
+              <span class="zoom-hint">🔍 Click to zoom</span>
+            </div>
+          </div>
+        </div>
+        <div class="tier-details-table">
+          <div class="detail-item">
+            <span class="d-label">Architecture Level</span>
+            <span class="d-val">Level 2: Dual Silver Border + Heraldic Corner Diamonds</span>
+          </div>
+          <div class="detail-item">
+            <span class="d-label">Header & Title</span>
+            <span class="d-val">SPORTSECO COMPETITIVE VANGUARD &bull; CERTIFICATE OF TACTICAL COMPETENCE</span>
+          </div>
+          <div class="detail-item">
+            <span class="d-label">Accredited Seal</span>
+            <span class="d-val">TACTICAL ACCREDITATION SEAL</span>
+          </div>
+          <div class="detail-item">
+            <span class="d-label">Signatories</span>
+            <span class="d-val">Accredited Lead Coach, Technical Supervisor</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TIER 04 -->
+    <div class="tier-card theme-silver" data-theme="silver">
+      <div class="card-header">
+        <div class="card-title-group">
+          <div class="tier-badge-icon">🛡️</div>
+          <div class="tier-meta">
+            <h2><span class="tier-num">Tier 04</span> Disciplined Athlete</h2>
+            <div class="latin-motto-tag">&ldquo;Disciplina Vincit Omnia&rdquo; &bull; Milestone Vanguard</div>
+          </div>
+        </div>
+        <div class="card-actions">
+          <div class="xp-pill">1,000 XP</div>
+          <a class="btn-download-pdf" href="pdfs/tier_04_disciplined_athlete.pdf" target="_blank" download>Download PDF</a>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="comparison-grid">
+          <div class="preview-column ui-col">
+            <div class="preview-header">
+              <span class="preview-title">📱 In-App UI Dialog</span>
+              <span style="font-size: 11px; color: var(--text-muted);">Interactive Modal</span>
+            </div>
+            <div class="preview-img-container" onclick="openLightbox('ui_snapshots/tier_04_disciplined_athlete.png', 'Tier 04: Disciplined Athlete (In-App UI Modal)')">
+              <img src="ui_snapshots/tier_04_disciplined_athlete.png" alt="Tier 04 UI Modal">
+              <span class="zoom-hint">🔍 Click to zoom</span>
+            </div>
+          </div>
+          <div class="preview-column pdf-col">
+            <div class="preview-header">
+              <span class="preview-title">📄 Official Vector PDF</span>
+              <span style="font-size: 11px; color: var(--text-muted);">Landscape 300-DPI Vector</span>
+            </div>
+            <div class="preview-img-container" onclick="openLightbox('pdf_snapshots/tier_04_disciplined_athlete.png', 'Tier 04: Disciplined Athlete (Official Vector PDF)')">
+              <img src="pdf_snapshots/tier_04_disciplined_athlete.png" alt="Tier 04 PDF Snapshot">
+              <span class="zoom-hint">🔍 Click to zoom</span>
+            </div>
+          </div>
+        </div>
+        <div class="tier-details-table">
+          <div class="detail-item">
+            <span class="d-label">Architecture Level</span>
+            <span class="d-val">Level 2: Dual Silver Border + Heraldic Corner Diamonds</span>
+          </div>
+          <div class="detail-item">
+            <span class="d-label">Header & Title</span>
+            <span class="d-val">SPORTSECO COMPETITIVE VANGUARD &bull; CERTIFICATE OF ADVANCED DISCIPLINE</span>
+          </div>
+          <div class="detail-item">
+            <span class="d-label">Accredited Seal</span>
+            <span class="d-val">1,000 XP VANGUARD SEAL</span>
+          </div>
+          <div class="detail-item">
+            <span class="d-label">Signatories</span>
+            <span class="d-val">Accredited Lead Coach, Technical Supervisor</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TIER 05 -->
+    <div class="tier-card theme-silver" data-theme="silver">
+      <div class="card-header">
+        <div class="card-title-group">
+          <div class="tier-badge-icon">⚔️</div>
+          <div class="tier-meta">
+            <h2><span class="tier-num">Tier 05</span> Consistent Striker</h2>
+            <div class="latin-motto-tag">&ldquo;Impetus et Fides&rdquo; &bull; Performance Ironclad</div>
+          </div>
+        </div>
+        <div class="card-actions">
+          <div class="xp-pill">1,500 XP</div>
+          <a class="btn-download-pdf" href="pdfs/tier_05_consistent_striker.pdf" target="_blank" download>Download PDF</a>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="comparison-grid">
+          <div class="preview-column ui-col">
+            <div class="preview-header">
+              <span class="preview-title">📱 In-App UI Dialog</span>
+              <span style="font-size: 11px; color: var(--text-muted);">Interactive Modal</span>
+            </div>
+            <div class="preview-img-container" onclick="openLightbox('ui_snapshots/tier_05_consistent_striker.png', 'Tier 05: Consistent Striker (In-App UI Modal)')">
+              <img src="ui_snapshots/tier_05_consistent_striker.png" alt="Tier 05 UI Modal">
+              <span class="zoom-hint">🔍 Click to zoom</span>
+            </div>
+          </div>
+          <div class="preview-column pdf-col">
+            <div class="preview-header">
+              <span class="preview-title">📄 Official Vector PDF</span>
+              <span style="font-size: 11px; color: var(--text-muted);">Landscape 300-DPI Vector</span>
+            </div>
+            <div class="preview-img-container" onclick="openLightbox('pdf_snapshots/tier_05_consistent_striker.png', 'Tier 05: Consistent Striker (Official Vector PDF)')">
+              <img src="pdf_snapshots/tier_05_consistent_striker.png" alt="Tier 05 PDF Snapshot">
+              <span class="zoom-hint">🔍 Click to zoom</span>
+            </div>
+          </div>
+        </div>
+        <div class="tier-details-table">
+          <div class="detail-item">
+            <span class="d-label">Architecture Level</span>
+            <span class="d-val">Level 2: Dual Silver Border + Heraldic Corner Diamonds</span>
+          </div>
+          <div class="detail-item">
+            <span class="d-label">Header & Title</span>
+            <span class="d-val">SPORTSECO COMPETITIVE VANGUARD &bull; CERTIFICATE OF ENDURANCE & STRIKING</span>
+          </div>
+          <div class="detail-item">
+            <span class="d-label">Accredited Seal</span>
+            <span class="d-val">IRONCLAD COMPETITIVE SEAL</span>
+          </div>
+          <div class="detail-item">
+            <span class="d-label">Signatories</span>
+            <span class="d-val">Accredited Lead Coach, Technical Supervisor</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TIER 06 -->
+    <div class="tier-card theme-gold" data-theme="gold">
+      <div class="card-header">
+        <div class="card-title-group">
+          <div class="tier-badge-icon">🥇</div>
+          <div class="tier-meta">
+            <h2><span class="tier-num">Tier 06</span> Advanced Performer</h2>
+            <div class="latin-motto-tag">&ldquo;Ad Altiora Semper&rdquo; &bull; Distinguished Performer</div>
+          </div>
+        </div>
+        <div class="card-actions">
+          <div class="xp-pill">2,200 XP</div>
+          <a class="btn-download-pdf" href="pdfs/tier_06_advanced_performer.pdf" target="_blank" download>Download PDF</a>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="comparison-grid">
+          <div class="preview-column ui-col">
+            <div class="preview-header">
+              <span class="preview-title">📱 In-App UI Dialog</span>
+              <span style="font-size: 11px; color: var(--text-muted);">Interactive Modal</span>
+            </div>
+            <div class="preview-img-container" onclick="openLightbox('ui_snapshots/tier_06_advanced_performer.png', 'Tier 06: Advanced Performer (In-App UI Modal)')">
+              <img src="ui_snapshots/tier_06_advanced_performer.png" alt="Tier 06 UI Modal">
+              <span class="zoom-hint">🔍 Click to zoom</span>
+            </div>
+          </div>
+          <div class="preview-column pdf-col">
+            <div class="preview-header">
+              <span class="preview-title">📄 Official Vector PDF</span>
+              <span style="font-size: 11px; color: var(--text-muted);">Landscape 300-DPI Vector</span>
+            </div>
+            <div class="preview-img-container" onclick="openLightbox('pdf_snapshots/tier_06_advanced_performer.png', 'Tier 06: Advanced Performer (Official Vector PDF)')">
+              <img src="pdf_snapshots/tier_06_advanced_performer.png" alt="Tier 06 PDF Snapshot">
+              <span class="zoom-hint">🔍 Click to zoom</span>
+            </div>
+          </div>
+        </div>
+        <div class="tier-details-table">
+          <div class="detail-item">
+            <span class="d-label">Architecture Level</span>
+            <span class="d-val">Level 3: Triple Gold Frame + Corner Rosette Accents + Latin Banner</span>
+          </div>
+          <div class="detail-item">
+            <span class="d-label">Header & Title</span>
+            <span class="d-val">SPORTSECO ELITE ATHLETIC GUILD &bull; DIPLOMA OF DISTINGUISHED PERFORMANCE</span>
+          </div>
+          <div class="detail-item">
+            <span class="d-label">Accredited Seal</span>
+            <span class="d-val">GOLD PERFORMANCE CREST</span>
+          </div>
+          <div class="detail-item">
+            <span class="d-label">Signatories</span>
+            <span class="d-val">Accredited Lead Coach, Head of Performance</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TIER 07 -->
+    <div class="tier-card theme-gold" data-theme="gold">
+      <div class="card-header">
+        <div class="card-title-group">
+          <div class="tier-badge-icon">🎯</div>
+          <div class="tier-meta">
+            <h2><span class="tier-num">Tier 07</span> Tournament Candidate</h2>
+            <div class="latin-motto-tag">&ldquo;Paratus Ad Victoriam&rdquo; &bull; Tournament Certified</div>
+          </div>
+        </div>
+        <div class="card-actions">
+          <div class="xp-pill">3,000 XP</div>
+          <a class="btn-download-pdf" href="pdfs/tier_07_tournament_candidate.pdf" target="_blank" download>Download PDF</a>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="comparison-grid">
+          <div class="preview-column ui-col">
+            <div class="preview-header">
+              <span class="preview-title">📱 In-App UI Dialog</span>
+              <span style="font-size: 11px; color: var(--text-muted);">Interactive Modal</span>
+            </div>
+            <div class="preview-img-container" onclick="openLightbox('ui_snapshots/tier_07_tournament_candidate.png', 'Tier 07: Tournament Candidate (In-App UI Modal)')">
+              <img src="ui_snapshots/tier_07_tournament_candidate.png" alt="Tier 07 UI Modal">
+              <span class="zoom-hint">🔍 Click to zoom</span>
+            </div>
+          </div>
+          <div class="preview-column pdf-col">
+            <div class="preview-header">
+              <span class="preview-title">📄 Official Vector PDF</span>
+              <span style="font-size: 11px; color: var(--text-muted);">Landscape 300-DPI Vector</span>
+            </div>
+            <div class="preview-img-container" onclick="openLightbox('pdf_snapshots/tier_07_tournament_candidate.png', 'Tier 07: Tournament Candidate (Official Vector PDF)')">
+              <img src="pdf_snapshots/tier_07_tournament_candidate.png" alt="Tier 07 PDF Snapshot">
+              <span class="zoom-hint">🔍 Click to zoom</span>
+            </div>
+          </div>
+        </div>
+        <div class="tier-details-table">
+          <div class="detail-item">
+            <span class="d-label">Architecture Level</span>
+            <span class="d-val">Level 3: Triple Gold Frame + Corner Rosette Accents + Latin Banner</span>
+          </div>
+          <div class="detail-item">
+            <span class="d-label">Header & Title</span>
+            <span class="d-val">SPORTSECO ELITE ATHLETIC GUILD &bull; CERTIFICATE OF TOURNAMENT READINESS</span>
+          </div>
+          <div class="detail-item">
+            <span class="d-label">Accredited Seal</span>
+            <span class="d-val">TOURNAMENT CANDIDATE SEAL</span>
+          </div>
+          <div class="detail-item">
+            <span class="d-label">Signatories</span>
+            <span class="d-val">Accredited Lead Coach, Head of Performance</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TIER 08 -->
+    <div class="tier-card theme-gold" data-theme="gold">
+      <div class="card-header">
+        <div class="card-title-group">
+          <div class="tier-badge-icon">⚡</div>
+          <div class="tier-meta">
+            <h2><span class="tier-num">Tier 08</span> Elite Competitor</h2>
+            <div class="latin-motto-tag">&ldquo;Fortitudo et Celeritas&rdquo; &bull; Elite Laureate</div>
+          </div>
+        </div>
+        <div class="card-actions">
+          <div class="xp-pill">4,000 XP</div>
+          <a class="btn-download-pdf" href="pdfs/tier_08_elite_competitor.pdf" target="_blank" download>Download PDF</a>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="comparison-grid">
+          <div class="preview-column ui-col">
+            <div class="preview-header">
+              <span class="preview-title">📱 In-App UI Dialog</span>
+              <span style="font-size: 11px; color: var(--text-muted);">Interactive Modal</span>
+            </div>
+            <div class="preview-img-container" onclick="openLightbox('ui_snapshots/tier_08_elite_competitor.png', 'Tier 08: Elite Competitor (In-App UI Modal)')">
+              <img src="ui_snapshots/tier_08_elite_competitor.png" alt="Tier 08 UI Modal">
+              <span class="zoom-hint">🔍 Click to zoom</span>
+            </div>
+          </div>
+          <div class="preview-column pdf-col">
+            <div class="preview-header">
+              <span class="preview-title">📄 Official Vector PDF</span>
+              <span style="font-size: 11px; color: var(--text-muted);">Landscape 300-DPI Vector</span>
+            </div>
+            <div class="preview-img-container" onclick="openLightbox('pdf_snapshots/tier_08_elite_competitor.png', 'Tier 08: Elite Competitor (Official Vector PDF)')">
+              <img src="pdf_snapshots/tier_08_elite_competitor.png" alt="Tier 08 PDF Snapshot">
+              <span class="zoom-hint">🔍 Click to zoom</span>
+            </div>
+          </div>
+        </div>
+        <div class="tier-details-table">
+          <div class="detail-item">
+            <span class="d-label">Architecture Level</span>
+            <span class="d-val">Level 3: Triple Gold Frame + Corner Rosette Accents + Latin Banner</span>
+          </div>
+          <div class="detail-item">
+            <span class="d-label">Header & Title</span>
+            <span class="d-val">SPORTSECO ELITE ATHLETIC GUILD &bull; CERTIFICATE OF ELITE COMPETITIVE MASTERY</span>
+          </div>
+          <div class="detail-item">
+            <span class="d-label">Accredited Seal</span>
+            <span class="d-val">ELITE COMPETITOR GOLD ROSETTE</span>
+          </div>
+          <div class="detail-item">
+            <span class="d-label">Signatories</span>
+            <span class="d-val">Accredited Lead Coach, Head of Performance</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TIER 09 -->
+    <div class="tier-card theme-platinum" data-theme="platinum">
+      <div class="card-header">
+        <div class="card-title-group">
+          <div class="tier-badge-icon">🔥</div>
+          <div class="tier-meta">
+            <h2><span class="tier-num">Tier 09</span> Mastery Vanguard</h2>
+            <div class="latin-motto-tag">&ldquo;Virtus Sine Termino&rdquo; &bull; Vanguard Distinction</div>
+          </div>
+        </div>
+        <div class="card-actions">
+          <div class="xp-pill">5,500 XP</div>
+          <a class="btn-download-pdf" href="pdfs/tier_09_mastery_vanguard.pdf" target="_blank" download>Download PDF</a>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="comparison-grid">
+          <div class="preview-column ui-col">
+            <div class="preview-header">
+              <span class="preview-title">📱 In-App UI Dialog</span>
+              <span style="font-size: 11px; color: var(--text-muted);">Interactive Modal</span>
+            </div>
+            <div class="preview-img-container" onclick="openLightbox('ui_snapshots/tier_09_mastery_vanguard.png', 'Tier 09: Mastery Vanguard (In-App UI Modal)')">
+              <img src="ui_snapshots/tier_09_mastery_vanguard.png" alt="Tier 09 UI Modal">
+              <span class="zoom-hint">🔍 Click to zoom</span>
+            </div>
+          </div>
+          <div class="preview-column pdf-col">
+            <div class="preview-header">
+              <span class="preview-title">📄 Official Vector PDF</span>
+              <span style="font-size: 11px; color: var(--text-muted);">Landscape 300-DPI Vector</span>
+            </div>
+            <div class="preview-img-container" onclick="openLightbox('pdf_snapshots/tier_09_mastery_vanguard.png', 'Tier 09: Mastery Vanguard (Official Vector PDF)')">
+              <img src="pdf_snapshots/tier_09_mastery_vanguard.png" alt="Tier 09 PDF Snapshot">
+              <span class="zoom-hint">🔍 Click to zoom</span>
+            </div>
+          </div>
+        </div>
+        <div class="tier-details-table">
+          <div class="detail-item">
+            <span class="d-label">Architecture Level</span>
+            <span class="d-val">Level 4: Quadruple Guilloche Border + Ornate Crown Flourishes</span>
+          </div>
+          <div class="detail-item">
+            <span class="d-label">Header & Title</span>
+            <span class="d-val">SPORTSECO HIGH PERFORMANCE COUNCIL &bull; DIPLOMA OF HIGH ATHLETIC MASTERY</span>
+          </div>
+          <div class="detail-item">
+            <span class="d-label">Accredited Seal</span>
+            <span class="d-val">PLATINUM MASTERY SEAL</span>
+          </div>
+          <div class="detail-item">
+            <span class="d-label">Signatories</span>
+            <span class="d-val">Lead Master Coach, Director of Athletics</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TIER 10 -->
+    <div class="tier-card theme-platinum" data-theme="platinum">
+      <div class="card-header">
+        <div class="card-title-group">
+          <div class="tier-badge-icon">🏆</div>
+          <div class="tier-meta">
+            <h2><span class="tier-num">Tier 10</span> Academy Champion</h2>
+            <div class="latin-motto-tag">&ldquo;Victor Ludorum&rdquo; &bull; Academy Champion</div>
+          </div>
+        </div>
+        <div class="card-actions">
+          <div class="xp-pill">7,500 XP</div>
+          <a class="btn-download-pdf" href="pdfs/tier_10_academy_champion.pdf" target="_blank" download>Download PDF</a>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="comparison-grid">
+          <div class="preview-column ui-col">
+            <div class="preview-header">
+              <span class="preview-title">📱 In-App UI Dialog</span>
+              <span style="font-size: 11px; color: var(--text-muted);">Interactive Modal</span>
+            </div>
+            <div class="preview-img-container" onclick="openLightbox('ui_snapshots/tier_10_academy_champion.png', 'Tier 10: Academy Champion (In-App UI Modal)')">
+              <img src="ui_snapshots/tier_10_academy_champion.png" alt="Tier 10 UI Modal">
+              <span class="zoom-hint">🔍 Click to zoom</span>
+            </div>
+          </div>
+          <div class="preview-column pdf-col">
+            <div class="preview-header">
+              <span class="preview-title">📄 Official Vector PDF</span>
+              <span style="font-size: 11px; color: var(--text-muted);">Landscape 300-DPI Vector</span>
+            </div>
+            <div class="preview-img-container" onclick="openLightbox('pdf_snapshots/tier_10_academy_champion.png', 'Tier 10: Academy Champion (Official Vector PDF)')">
+              <img src="pdf_snapshots/tier_10_academy_champion.png" alt="Tier 10 PDF Snapshot">
+              <span class="zoom-hint">🔍 Click to zoom</span>
+            </div>
+          </div>
+        </div>
+        <div class="tier-details-table">
+          <div class="detail-item">
+            <span class="d-label">Architecture Level</span>
+            <span class="d-val">Level 4: Quadruple Guilloche Border + Ornate Crown Flourishes</span>
+          </div>
+          <div class="detail-item">
+            <span class="d-label">Header & Title</span>
+            <span class="d-val">SPORTSECO HIGH PERFORMANCE COUNCIL &bull; CERTIFICATE OF ACADEMY CHAMPIONSHIP</span>
+          </div>
+          <div class="detail-item">
+            <span class="d-label">Accredited Seal</span>
+            <span class="d-val">ACADEMY CHAMPION STAR SEAL</span>
+          </div>
+          <div class="detail-item">
+            <span class="d-label">Signatories</span>
+            <span class="d-val">Lead Master Coach, Director of Athletics</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TIER 11 -->
+    <div class="tier-card theme-platinum" data-theme="platinum">
+      <div class="card-header">
+        <div class="card-title-group">
+          <div class="tier-badge-icon">💠</div>
+          <div class="tier-meta">
+            <h2><span class="tier-num">Tier 11</span> Grandmaster Athlete</h2>
+            <div class="latin-motto-tag">&ldquo;Magister Virtutis Athleticae&rdquo; &bull; Grandmaster Distinction</div>
+          </div>
+        </div>
+        <div class="card-actions">
+          <div class="xp-pill">10,000 XP</div>
+          <a class="btn-download-pdf" href="pdfs/tier_11_grandmaster_athlete.pdf" target="_blank" download>Download PDF</a>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="comparison-grid">
+          <div class="preview-column ui-col">
+            <div class="preview-header">
+              <span class="preview-title">📱 In-App UI Dialog</span>
+              <span style="font-size: 11px; color: var(--text-muted);">Interactive Modal</span>
+            </div>
+            <div class="preview-img-container" onclick="openLightbox('ui_snapshots/tier_11_grandmaster_athlete.png', 'Tier 11: Grandmaster Athlete (In-App UI Modal)')">
+              <img src="ui_snapshots/tier_11_grandmaster_athlete.png" alt="Tier 11 UI Modal">
+              <span class="zoom-hint">🔍 Click to zoom</span>
+            </div>
+          </div>
+          <div class="preview-column pdf-col">
+            <div class="preview-header">
+              <span class="preview-title">📄 Official Vector PDF</span>
+              <span style="font-size: 11px; color: var(--text-muted);">Landscape 300-DPI Vector</span>
+            </div>
+            <div class="preview-img-container" onclick="openLightbox('pdf_snapshots/tier_11_grandmaster_athlete.png', 'Tier 11: Grandmaster Athlete (Official Vector PDF)')">
+              <img src="pdf_snapshots/tier_11_grandmaster_athlete.png" alt="Tier 11 PDF Snapshot">
+              <span class="zoom-hint">🔍 Click to zoom</span>
+            </div>
+          </div>
+        </div>
+        <div class="tier-details-table">
+          <div class="detail-item">
+            <span class="d-label">Architecture Level</span>
+            <span class="d-val">Level 4: Quadruple Guilloche Border + Ornate Crown Flourishes</span>
+          </div>
+          <div class="detail-item">
+            <span class="d-label">Header & Title</span>
+            <span class="d-val">SPORTSECO HIGH PERFORMANCE COUNCIL &bull; GRANDMASTER CONVOCATION OF EXCELLENCE</span>
+          </div>
+          <div class="detail-item">
+            <span class="d-label">Accredited Seal</span>
+            <span class="d-val">10K GRANDMASTER SEAL</span>
+          </div>
+          <div class="detail-item">
+            <span class="d-label">Signatories</span>
+            <span class="d-val">Lead Master Coach, Director of Athletics</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TIER 12 -->
+    <div class="tier-card theme-platinum" data-theme="platinum">
+      <div class="card-header">
+        <div class="card-title-group">
+          <div class="tier-badge-icon">🌟</div>
+          <div class="tier-meta">
+            <h2><span class="tier-num">Tier 12</span> State-Level Contender</h2>
+            <div class="latin-motto-tag">&ldquo;Gloria Provinciae&rdquo; &bull; State Caliber Contender</div>
+          </div>
+        </div>
+        <div class="card-actions">
+          <div class="xp-pill">13,000 XP</div>
+          <a class="btn-download-pdf" href="pdfs/tier_12_state_level_contender.pdf" target="_blank" download>Download PDF</a>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="comparison-grid">
+          <div class="preview-column ui-col">
+            <div class="preview-header">
+              <span class="preview-title">📱 In-App UI Dialog</span>
+              <span style="font-size: 11px; color: var(--text-muted);">Interactive Modal</span>
+            </div>
+            <div class="preview-img-container" onclick="openLightbox('ui_snapshots/tier_12_state_level_contender.png', 'Tier 12: State-Level Contender (In-App UI Modal)')">
+              <img src="ui_snapshots/tier_12_state_level_contender.png" alt="Tier 12 UI Modal">
+              <span class="zoom-hint">🔍 Click to zoom</span>
+            </div>
+          </div>
+          <div class="preview-column pdf-col">
+            <div class="preview-header">
+              <span class="preview-title">📄 Official Vector PDF</span>
+              <span style="font-size: 11px; color: var(--text-muted);">Landscape 300-DPI Vector</span>
+            </div>
+            <div class="preview-img-container" onclick="openLightbox('pdf_snapshots/tier_12_state_level_contender.png', 'Tier 12: State-Level Contender (Official Vector PDF)')">
+              <img src="pdf_snapshots/tier_12_state_level_contender.png" alt="Tier 12 PDF Snapshot">
+              <span class="zoom-hint">🔍 Click to zoom</span>
+            </div>
+          </div>
+        </div>
+        <div class="tier-details-table">
+          <div class="detail-item">
+            <span class="d-label">Architecture Level</span>
+            <span class="d-val">Level 4: Quadruple Guilloche Border + Ornate Crown Flourishes</span>
+          </div>
+          <div class="detail-item">
+            <span class="d-label">Header & Title</span>
+            <span class="d-val">SPORTSECO HIGH PERFORMANCE COUNCIL &bull; STATE CONTENDER LAUREATE</span>
+          </div>
+          <div class="detail-item">
+            <span class="d-label">Accredited Seal</span>
+            <span class="d-val">STATE SELECTION CONTENDER SEAL</span>
+          </div>
+          <div class="detail-item">
+            <span class="d-label">Signatories</span>
+            <span class="d-val">Lead Master Coach, Director of Athletics</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TIER 13 -->
+    <div class="tier-card theme-obsidian" data-theme="obsidian">
+      <div class="card-header">
+        <div class="card-title-group">
+          <div class="tier-badge-icon">🎖️</div>
+          <div class="tier-meta">
+            <h2><span class="tier-num">Tier 13</span> National Prospect</h2>
+            <div class="latin-motto-tag">&ldquo;Pro Patria et Victoria&rdquo; &bull; National Prospect Order</div>
+          </div>
+        </div>
+        <div class="card-actions">
+          <div class="xp-pill">16,500 XP</div>
+          <a class="btn-download-pdf" href="pdfs/tier_13_national_prospect.pdf" target="_blank" download>Download PDF</a>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="comparison-grid">
+          <div class="preview-column ui-col">
+            <div class="preview-header">
+              <span class="preview-title">📱 In-App UI Dialog</span>
+              <span style="font-size: 11px; color: var(--text-muted);">Interactive Modal</span>
+            </div>
+            <div class="preview-img-container" onclick="openLightbox('ui_snapshots/tier_13_national_prospect.png', 'Tier 13: National Prospect (In-App UI Modal)')">
+              <img src="ui_snapshots/tier_13_national_prospect.png" alt="Tier 13 UI Modal">
+              <span class="zoom-hint">🔍 Click to zoom</span>
+            </div>
+          </div>
+          <div class="preview-column pdf-col">
+            <div class="preview-header">
+              <span class="preview-title">📄 Official Vector PDF</span>
+              <span style="font-size: 11px; color: var(--text-muted);">Landscape 300-DPI Vector</span>
+            </div>
+            <div class="preview-img-container" onclick="openLightbox('pdf_snapshots/tier_13_national_prospect.png', 'Tier 13: National Prospect (Official Vector PDF)')">
+              <img src="pdf_snapshots/tier_13_national_prospect.png" alt="Tier 13 PDF Snapshot">
+              <span class="zoom-hint">🔍 Click to zoom</span>
+            </div>
+          </div>
+        </div>
+        <div class="tier-details-table">
+          <div class="detail-item">
+            <span class="d-label">Architecture Level</span>
+            <span class="d-val">Level 5: Sovereign Hall of Fame Imperial Quad-Frame &bull; Triple Signatories</span>
+          </div>
+          <div class="detail-item">
+            <span class="d-label">Header & Title</span>
+            <span class="d-val">SPORTSECO NATIONAL SUPREME ATHLETIC ORDER &bull; NATIONAL MERIT PROSPECT LAUREL</span>
+          </div>
+          <div class="detail-item">
+            <span class="d-label">Accredited Seal</span>
+            <span class="d-val">NATIONAL ORDER INSIGNIA</span>
+          </div>
+          <div class="detail-item">
+            <span class="d-label">Signatories</span>
+            <span class="d-val">National Board Chair, High Performance Director, Chief Executive</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TIER 14 -->
+    <div class="tier-card theme-obsidian" data-theme="obsidian">
+      <div class="card-header">
+        <div class="card-title-group">
+          <div class="tier-badge-icon">🌠</div>
+          <div class="tier-meta">
+            <h2><span class="tier-num">Tier 14</span> Legendary Athlete</h2>
+            <div class="latin-motto-tag">&ldquo;In Perpetuum Praestans&rdquo; &bull; Legend of the Arena</div>
+          </div>
+        </div>
+        <div class="card-actions">
+          <div class="xp-pill">20,500 XP</div>
+          <a class="btn-download-pdf" href="pdfs/tier_14_legendary_athlete.pdf" target="_blank" download>Download PDF</a>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="comparison-grid">
+          <div class="preview-column ui-col">
+            <div class="preview-header">
+              <span class="preview-title">📱 In-App UI Dialog</span>
+              <span style="font-size: 11px; color: var(--text-muted);">Interactive Modal</span>
+            </div>
+            <div class="preview-img-container" onclick="openLightbox('ui_snapshots/tier_14_legendary_athlete.png', 'Tier 14: Legendary Athlete (In-App UI Modal)')">
+              <img src="ui_snapshots/tier_14_legendary_athlete.png" alt="Tier 14 UI Modal">
+              <span class="zoom-hint">🔍 Click to zoom</span>
+            </div>
+          </div>
+          <div class="preview-column pdf-col">
+            <div class="preview-header">
+              <span class="preview-title">📄 Official Vector PDF</span>
+              <span style="font-size: 11px; color: var(--text-muted);">Landscape 300-DPI Vector</span>
+            </div>
+            <div class="preview-img-container" onclick="openLightbox('pdf_snapshots/tier_14_legendary_athlete.png', 'Tier 14: Legendary Athlete (Official Vector PDF)')">
+              <img src="pdf_snapshots/tier_14_legendary_athlete.png" alt="Tier 14 PDF Snapshot">
+              <span class="zoom-hint">🔍 Click to zoom</span>
+            </div>
+          </div>
+        </div>
+        <div class="tier-details-table">
+          <div class="detail-item">
+            <span class="d-label">Architecture Level</span>
+            <span class="d-val">Level 5: Sovereign Hall of Fame Imperial Quad-Frame &bull; Triple Signatories</span>
+          </div>
+          <div class="detail-item">
+            <span class="d-label">Header & Title</span>
+            <span class="d-val">SPORTSECO NATIONAL SUPREME ATHLETIC ORDER &bull; LEGENDARY ATHLETIC RECORD OF HONOR</span>
+          </div>
+          <div class="detail-item">
+            <span class="d-label">Accredited Seal</span>
+            <span class="d-val">LEGENDARY CROWN ROSETTE</span>
+          </div>
+          <div class="detail-item">
+            <span class="d-label">Signatories</span>
+            <span class="d-val">National Board Chair, High Performance Director, Chief Executive</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TIER 15 -->
+    <div class="tier-card theme-obsidian" data-theme="obsidian">
+      <div class="card-header">
+        <div class="card-title-group">
+          <div class="tier-badge-icon">👑</div>
+          <div class="tier-meta">
+            <h2><span class="tier-num">Tier 15</span> Hall of Fame Sovereign</h2>
+            <div class="latin-motto-tag">&ldquo;Aeterna Gloria Immortalis&rdquo; &bull; Sovereign Hall of Fame</div>
+          </div>
+        </div>
+        <div class="card-actions">
+          <div class="xp-pill">25,000 XP</div>
+          <a class="btn-download-pdf" href="pdfs/tier_15_hall_of_fame_sovereign.pdf" target="_blank" download>Download PDF</a>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="comparison-grid">
+          <div class="preview-column ui-col">
+            <div class="preview-header">
+              <span class="preview-title">📱 In-App UI Dialog</span>
+              <span style="font-size: 11px; color: var(--text-muted);">Interactive Modal</span>
+            </div>
+            <div class="preview-img-container" onclick="openLightbox('ui_snapshots/tier_15_hall_of_fame_sovereign.png', 'Tier 15: Hall of Fame Sovereign (In-App UI Modal)')">
+              <img src="ui_snapshots/tier_15_hall_of_fame_sovereign.png" alt="Tier 15 UI Modal">
+              <span class="zoom-hint">🔍 Click to zoom</span>
+            </div>
+          </div>
+          <div class="preview-column pdf-col">
+            <div class="preview-header">
+              <span class="preview-title">📄 Official Vector PDF</span>
+              <span style="font-size: 11px; color: var(--text-muted);">Landscape 300-DPI Vector</span>
+            </div>
+            <div class="preview-img-container" onclick="openLightbox('pdf_snapshots/tier_15_hall_of_fame_sovereign.png', 'Tier 15: Hall of Fame Sovereign (Official Vector PDF)')">
+              <img src="pdf_snapshots/tier_15_hall_of_fame_sovereign.png" alt="Tier 15 PDF Snapshot">
+              <span class="zoom-hint">🔍 Click to zoom</span>
+            </div>
+          </div>
+        </div>
+        <div class="tier-details-table">
+          <div class="detail-item">
+            <span class="d-label">Architecture Level</span>
+            <span class="d-val">Level 5: Sovereign Hall of Fame Imperial Quad-Frame &bull; Triple Signatories</span>
+          </div>
+          <div class="detail-item">
+            <span class="d-label">Header & Title</span>
+            <span class="d-val">SPORTSECO NATIONAL SUPREME ATHLETIC ORDER &bull; HALL OF FAME SOVEREIGN INDUCTION DECREE</span>
+          </div>
+          <div class="detail-item">
+            <span class="d-label">Accredited Seal</span>
+            <span class="d-val">SOVEREIGN HALL OF FAME GOLD SEAL</span>
+          </div>
+          <div class="detail-item">
+            <span class="d-label">Signatories</span>
+            <span class="d-val">National Board Chair, High Performance Director, Chief Executive</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Lightbox Modal -->
+<div class="lightbox" id="lightboxModal" onclick="closeLightbox(event)">
+  <div class="lightbox-content">
+    <button class="lightbox-close" onclick="closeLightbox(event)">&times;</button>
+    <img id="lightboxImg" src="" alt="Enlarged Certificate">
+    <div class="lightbox-caption" id="lightboxCaption"></div>
+  </div>
+</div>
+
+<script>
+  function filterTier(theme, btn) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    const cards = document.querySelectorAll('.tier-card');
+    cards.forEach(card => {
+      if (theme === 'all' || card.getAttribute('data-theme') === theme) {
+        card.style.display = 'block';
+      } else {
+        card.style.display = 'none';
+      }
+    });
+  }
+
+  function setViewMode(mode, btn) {
+    document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    const container = document.getElementById('tierCardsContainer');
+    container.classList.remove('hide-ui', 'hide-pdf');
+
+    if (mode === 'pdf') {
+      container.classList.add('hide-ui');
+    } else if (mode === 'ui') {
+      container.classList.add('hide-pdf');
+    }
+  }
+
+  function openLightbox(src, caption) {
+    const modal = document.getElementById('lightboxModal');
+    const img = document.getElementById('lightboxImg');
+    const cap = document.getElementById('lightboxCaption');
+    img.src = src;
+    cap.innerText = caption;
+    modal.classList.add('active');
+  }
+
+  function closeLightbox(e) {
+    if (e.target.id === 'lightboxModal' || e.target.classList.contains('lightbox-close')) {
+      document.getElementById('lightboxModal').classList.remove('active');
+    }
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      document.getElementById('lightboxModal').classList.remove('active');
+    }
+  });
+</script>
+
+</body>
+</html>

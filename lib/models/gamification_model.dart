@@ -14,65 +14,63 @@ class LevelModel {
   final String icon;
 
   static const List<LevelModel> levels = [
-    LevelModel(
-      level: 1,
-      title: 'Rookie',
-      minPoints: 0,
-      maxPoints: 100,
-      icon: '🥚',
-    ),
-    LevelModel(
-      level: 2,
-      title: 'Amateur',
-      minPoints: 101,
-      maxPoints: 300,
-      icon: '🌱',
-    ),
-    LevelModel(
-      level: 3,
-      title: 'Contender',
-      minPoints: 301,
-      maxPoints: 600,
-      icon: '⚡',
-    ),
-    LevelModel(
-      level: 4,
-      title: 'Champion',
-      minPoints: 601,
-      maxPoints: 1000,
-      icon: '🏆',
-    ),
-    LevelModel(
-      level: 5,
-      title: 'Legend',
-      minPoints: 1001,
-      maxPoints: 2000,
-      icon: '👑',
-    ),
-    LevelModel(
-      level: 6,
-      title: 'Mythic',
-      minPoints: 2001,
-      maxPoints: 5000,
-      icon: '🌟',
-    ),
+    LevelModel(level: 1, title: 'Rookie', minPoints: 0, maxPoints: 99, icon: '🥚'),
+    LevelModel(level: 2, title: 'Starter', minPoints: 100, maxPoints: 499, icon: '🌱'),
+    LevelModel(level: 3, title: 'Contender', minPoints: 500, maxPoints: 999, icon: '⚡'),
+    LevelModel(level: 4, title: 'Challenger', minPoints: 1000, maxPoints: 1499, icon: '🎯'),
+    LevelModel(level: 5, title: 'Competitor', minPoints: 1500, maxPoints: 1999, icon: '🔥'),
+    LevelModel(level: 6, title: 'Striker', minPoints: 2000, maxPoints: 2499, icon: '⚔️'),
   ];
 
   static LevelModel getLevel(int points) {
-    LevelModel current = levels.first;
-    for (final level in levels) {
-      if (points >= level.minPoints && points <= level.maxPoints) {
-        current = level;
-      } else if (points > level.maxPoints) {
-        current = level;
-      }
+    if (points < 100) {
+      return const LevelModel(level: 1, title: 'Rookie', minPoints: 0, maxPoints: 99, icon: '🥚');
     }
-    return current;
+    final lvlNum = 2 + ((points - 100) ~/ 500);
+    final minPts = 100 + ((lvlNum - 2) * 500);
+    final maxPts = minPts + 499;
+
+    String title;
+    String icon;
+    if (lvlNum == 2) {
+      title = 'Starter';
+      icon = '🌱';
+    } else if (lvlNum == 3) {
+      title = 'Contender';
+      icon = '⚡';
+    } else if (lvlNum == 4) {
+      title = 'Challenger';
+      icon = '🎯';
+    } else if (lvlNum == 5) {
+      title = 'Competitor';
+      icon = '🔥';
+    } else if (lvlNum <= 10) {
+      title = 'Warrior (T$lvlNum)';
+      icon = '⚔️';
+    } else if (lvlNum <= 20) {
+      title = 'Champion (T$lvlNum)';
+      icon = '🏆';
+    } else if (lvlNum <= 40) {
+      title = 'Grandmaster (T$lvlNum)';
+      icon = '💎';
+    } else {
+      title = 'Hall of Fame (T$lvlNum)';
+      icon = '👑';
+    }
+
+    return LevelModel(
+      level: lvlNum,
+      title: title,
+      minPoints: minPts,
+      maxPoints: maxPts,
+      icon: icon,
+    );
   }
 
   static double getProgress(int points) {
     final level = getLevel(points);
     final range = level.maxPoints - level.minPoints;
+    if (range <= 0) return 1.0;
     final progress = (points - level.minPoints) / range;
     return progress.clamp(0.0, 1.0);
   }

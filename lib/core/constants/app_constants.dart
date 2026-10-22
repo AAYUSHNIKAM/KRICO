@@ -1,24 +1,27 @@
-abstract class AppConstants {
+﻿abstract class AppConstants {
   AppConstants._();
 
-  static const String appName = 'SportsEco';
-  static const String appTagline = 'Your Complete Sports Ecosystem';
-  static const String appVersion = '1.0.0';
+  static const String appName = 'KRICO';
+  static const String appTagline = 'Krida • Coach • Community';
+  static const String appVersion = '0.0.1 (Pilot)';
 
-  static const String defaultCity = 'Pune';
-  static const List<String> puneLocalities = [
-    'Koregaon Park',
-    'Kalyani Nagar',
-    'Viman Nagar',
-    'Baner',
-    'Hinjewadi',
-    'Shivajinagar',
-    'Deccan Gymkhana',
-    'Camp',
-    'Kothrud',
-    'Hadapsar',
-    'Aundh',
-    'Wakad',
+  static const String defaultCity = 'All Locations';
+  static const List<String> majorCities = [
+    'All Locations',
+    'Mumbai',
+    'Delhi NCR',
+    'Bengaluru',
+    'Hyderabad',
+    'Chennai',
+    'Kolkata',
+    'Pune',
+    'Ahmedabad',
+    'Jaipur',
+    'Chandigarh',
+    'Lucknow',
+    'Kochi',
+    'Indore',
+    'Goa',
   ];
 
   static const List<String> sportCategories = [
@@ -26,12 +29,32 @@ abstract class AppConstants {
     'Football',
     'Badminton',
     'Tennis',
-    'Swimming',
     'Basketball',
-    'Athletics',
+    'Swimming',
+    'Table Tennis',
+    'Athletics & Running',
     'Chess',
-    'Yoga',
-    'Martial Arts',
+    'Martial Arts (Karate/Taekwondo)',
+    'Boxing',
+    'Yoga & Flexibility',
+    'Volleyball',
+    'Squash',
+    'Golf',
+    'Archery',
+    'Gymnastics',
+    'Shooting (Rifle/Pistol)',
+    'Roller & Inline Skating',
+    'Cycling (Road & Mountain)',
+    'Field Hockey',
+    'Wrestling (Freestyle/Greco)',
+    'Strength & Conditioning',
+    'Pickleball',
+    'Padel',
+    'Kabaddi',
+    'Rock Climbing & Bouldering',
+    'Rowing & Kayaking',
+    'Snooker & Pool',
+    'Handball',
   ];
 
   static const double platformFeePercent = 10.0;

@@ -57,6 +57,25 @@ class ContractService {
     });
   }
 
+  Future<void> raiseDispute({
+    required String contractId,
+    required String userId,
+    required String reason,
+    required String details,
+  }) async {
+    final disputeRef = _firestore.collection('disputes').doc();
+    await disputeRef.set({
+      'disputeId': disputeRef.id,
+      'contractId': contractId,
+      'filedBy': userId,
+      'reason': reason,
+      'details': details,
+      'status': 'open',
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+    await updateStatus(contractId, ContractStatus.disputed);
+  }
+
   Stream<double> getTotalRevenueStream() {
     return _firestore
         .collection('contracts')

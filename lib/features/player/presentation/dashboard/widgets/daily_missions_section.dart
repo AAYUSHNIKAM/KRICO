@@ -1,6 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:intl/intl.dart';
 import '../../../../../design_system/colors/app_colors.dart';
 import '../../../../../design_system/typography/text_styles.dart';
 import '../../../../../design_system/spacing/spacing_scale.dart';
@@ -31,14 +34,18 @@ class DailyMissionsSection extends ConsumerWidget {
               return sessionsAsync.when(
                 data: (snap) {
                   final sessions = snap.docs.map((d) => d.data()).toList();
-                  return _MissionsContent(playerPoints: player.points, sessions: sessions);
+                  return _MissionsContent(
+                    playerId: playerId,
+                    playerPoints: player.points,
+                    sessions: sessions,
+                  );
                 },
                 loading: () => const DashboardSectionShimmer(height: 280),
-                error: (_, __) => const SizedBox.shrink(),
+                error: (_, _) => const SizedBox.shrink(),
               );
             },
             loading: () => const DashboardSectionShimmer(height: 280),
-            error: (_, __) => const SizedBox.shrink(),
+            error: (_, _) => const SizedBox.shrink(),
           ),
         ],
       ),
@@ -46,38 +53,109 @@ class DailyMissionsSection extends ConsumerWidget {
   }
 }
 
-class _MissionsContent extends StatefulWidget {
+class _MissionsContent extends ConsumerStatefulWidget {
+  final String playerId;
   final int playerPoints;
   final List<Map<String, dynamic>> sessions;
 
-  const _MissionsContent({required this.playerPoints, required this.sessions});
+  const _MissionsContent({
+    required this.playerId,
+    required this.playerPoints,
+    required this.sessions,
+  });
 
   @override
-  State<_MissionsContent> createState() => _MissionsContentState();
+  ConsumerState<_MissionsContent> createState() => _MissionsContentState();
 }
 
-class _MissionsContentState extends State<_MissionsContent> {
+class _MissionsContentState extends ConsumerState<_MissionsContent> {
   final Set<int> _completedMissions = {};
   final Set<int> _animatingMissions = {};
+
+  String get _todayKey => DateFormat('yyyy-MM-dd').format(DateTime.now());
 
   @override
   void initState() {
     super.initState();
-    final completedSessions = widget.sessions.where((s) => s['status'] == 'completed').length;
-    if (completedSessions > 0) _completedMissions.add(1);
+    _loadPersistedMissions();
   }
 
-  void _completeMission(int index) {
+  Future<void> _loadPersistedMissions() async {
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(widget.playerId)
+          .collection('dailyMissions')
+          .doc(_todayKey)
+          .get();
+
+      if (doc.exists && doc.data() != null) {
+        final list = (doc.data()!['completedIndices'] as List<dynamic>?)?.cast<int>() ?? [];
+        if (mounted) {
+          setState(() {
+            _completedMissions.addAll(list);
+          });
+        }
+      }
+
+      final completedSessions = widget.sessions.where((s) => s['status'] == 'completed').length;
+      if (completedSessions > 0 && mounted) {
+        setState(() => _completedMissions.add(1));
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _completeMission(int index) async {
     if (_completedMissions.contains(index)) return;
+    HapticFeedback.mediumImpact();
     setState(() => _animatingMissions.add(index));
-    Future.delayed(const Duration(milliseconds: 600), () {
+
+    final missions = _generateMissions();
+    final missionXp = index < missions.length ? missions[index].xp : 15;
+
+    try {
+      // Award real points in Firestore
+      await ref.read(playerServiceProvider).addPoints(widget.playerId, missionXp);
+
+      // Persist daily mission record
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(widget.playerId)
+          .collection('dailyMissions')
+          .doc(_todayKey)
+          .set({
+        'completedIndices': FieldValue.arrayUnion([index]),
+        'date': _todayKey,
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+
       if (mounted) {
         setState(() {
           _animatingMissions.remove(index);
           _completedMissions.add(index);
         });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.stars_rounded, color: AppColors.warning, size: 20),
+                const SizedBox(width: 8),
+                Text('Mission Complete! +$missionXp XP Awarded'),
+              ],
+            ),
+            backgroundColor: const Color(0xFF0F172A),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: AppRadius.brLg),
+            duration: const Duration(seconds: 2),
+          ),
+        );
       }
-    });
+    } catch (e) {
+      if (mounted) {
+        setState(() => _animatingMissions.remove(index));
+      }
+    }
   }
 
   int _dayOfYear() {

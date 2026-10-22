@@ -1,10 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-DateTime? _parseTimestamp(dynamic value) {
-  if (value is Timestamp) return value.toDate();
-  if (value is String) return DateTime.tryParse(value);
-  return null;
-}
+import '../../../core/utils/date_parser.dart';
 
 class SquadGoal {
   final String goalId;
@@ -62,8 +58,8 @@ class SquadGoal {
       creatorId: data['creatorId'] as String? ?? '',
       reward: data['reward'] as String? ?? '',
       status: data['status'] as String? ?? 'active',
-      deadline: _parseTimestamp(data['deadline']) ?? DateTime.now(),
-      createdAt: _parseTimestamp(data['createdAt']) ?? DateTime.now(),
+      deadline: parseTimestamp(data['deadline']) ?? DateTime.now(),
+      createdAt: parseTimestamp(data['createdAt']) ?? DateTime.now(),
     );
   }
 }

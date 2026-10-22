@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../colors/app_colors.dart';
 import '../typography/text_styles.dart';
 import '../radius/radius.dart';
@@ -7,6 +8,9 @@ import '../spacing/spacing_scale.dart';
 import '../tokens/duration_tokens.dart';
 import '../icons/app_icons.dart';
 import '../widgets/buttons/icon_button_widget.dart';
+import '../../core/routing/app_router.dart';
+import '../../providers/auth_provider.dart';
+import '../../services/providers.dart';
 
 class PremiumTopBar extends ConsumerStatefulWidget {
   const PremiumTopBar({
@@ -66,7 +70,7 @@ class _PremiumTopBarState extends ConsumerState<PremiumTopBar> {
                 child: _buildSearchBar(isDark, textColor),
               ),
               const SizedBox(width: SpacingScale.s8),
-              _buildNotificationButton(isDark),
+              _buildNotificationButton(),
               const SizedBox(width: SpacingScale.s4),
               _buildProfileAvatar(isDark),
             ],
@@ -95,20 +99,24 @@ class _PremiumTopBarState extends ConsumerState<PremiumTopBar> {
         ),
         child: Focus(
           onFocusChange: (v) => setState(() => _searchFocused = v),
-          child: TextField(
-            style: AppTextStyles.body.copyWith(color: textColor),
-            decoration: InputDecoration(
-              hintText: 'Search...',
-              hintStyle: AppTextStyles.body.copyWith(color: hintColor),
-              prefixIcon: Icon(AppIcons.search, size: 18, color: hintColor),
-              border: InputBorder.none,
-              enabledBorder: InputBorder.none,
-              focusedBorder: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: SpacingScale.s12,
-                vertical: SpacingScale.s10,
+          child: GestureDetector(
+            onTap: () => context.push(AppRoutes.search),
+            child: TextField(
+              readOnly: true,
+              style: AppTextStyles.body.copyWith(color: textColor),
+              decoration: InputDecoration(
+                hintText: 'Search people...',
+                hintStyle: AppTextStyles.body.copyWith(color: hintColor),
+                prefixIcon: Icon(AppIcons.search, size: 18, color: hintColor),
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: SpacingScale.s12,
+                  vertical: SpacingScale.s10,
+                ),
+                isDense: true,
               ),
-              isDense: true,
             ),
           ),
         ),
@@ -116,27 +124,46 @@ class _PremiumTopBarState extends ConsumerState<PremiumTopBar> {
     );
   }
 
-  Widget _buildNotificationButton(bool isDark) {
+  Widget _buildNotificationButton() {
+    final userId = ref.watch(authStateProvider).value?.uid;
+    final unreadCount =
+        userId != null ? ref.watch(unreadNotificationsProvider(userId)) : 0;
+
     return Stack(
+      clipBehavior: Clip.none,
       children: [
         AppIconButton(
           icon: AppIcons.notifications,
-          onPressed: () {},
+          onPressed: () => context.push(AppRoutes.notifications),
           size: 36,
           outlined: true,
         ),
-        Positioned(
-          top: 6,
-          right: 6,
-          child: Container(
-            width: 8,
-            height: 8,
-            decoration: const BoxDecoration(
-              color: AppColors.danger,
-              shape: BoxShape.circle,
+        if (unreadCount > 0)
+          Positioned(
+            top: 4,
+            right: 4,
+            child: Container(
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(
+                color: AppColors.volt,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? AppColors.background
+                      : Colors.white,
+                  width: 1.5,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.volt.withValues(alpha: 0.8),
+                    blurRadius: 4,
+                    spreadRadius: 1,
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
       ],
     );
   }

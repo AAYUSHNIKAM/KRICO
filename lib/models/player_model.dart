@@ -1,10 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-
-DateTime? _parseTimestamp(dynamic value) {
-  if (value is Timestamp) return value.toDate();
-  if (value is String) return DateTime.tryParse(value);
-  return null;
-}
+import '../core/utils/date_parser.dart';
 
 class PlayerModel {
   const PlayerModel({
@@ -21,6 +16,17 @@ class PlayerModel {
     this.avatarUrl,
     this.coachId,
     this.academyId,
+    this.readinessStatus = 'Fundamentals',
+    this.consistencyStreak = 1,
+    this.lastSessionTime,
+    this.highestCertificateTitle,
+    this.highestCertificateTier,
+    this.totalPbs = 0,
+    this.totalDrills = 0,
+    this.emergencyContact,
+    this.medicalNotes,
+    this.bloodGroup,
+    this.schoolOrClub,
     this.createdAt,
     this.updatedAt,
   });
@@ -38,6 +44,17 @@ class PlayerModel {
   final String? avatarUrl;
   final String? coachId;
   final String? academyId;
+  final String readinessStatus;
+  final int consistencyStreak;
+  final DateTime? lastSessionTime;
+  final String? highestCertificateTitle;
+  final int? highestCertificateTier;
+  final int totalPbs;
+  final int totalDrills;
+  final String? emergencyContact;
+  final String? medicalNotes;
+  final String? bloodGroup;
+  final String? schoolOrClub;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -57,8 +74,19 @@ class PlayerModel {
       avatarUrl: data['avatarUrl'] as String?,
       coachId: data['coachId'] as String?,
       academyId: data['academyId'] as String?,
-      createdAt: _parseTimestamp(data['createdAt']),
-      updatedAt: _parseTimestamp(data['updatedAt']),
+      readinessStatus: data['readinessStatus'] as String? ?? 'Fundamentals',
+      consistencyStreak: (data['consistencyStreak'] as num?)?.toInt() ?? 1,
+      lastSessionTime: parseTimestamp(data['lastSessionTime']),
+      highestCertificateTitle: data['highestCertificateTitle'] as String?,
+      highestCertificateTier: (data['highestCertificateTier'] as num?)?.toInt(),
+      totalPbs: (data['totalPbs'] as num?)?.toInt() ?? 0,
+      totalDrills: (data['totalDrills'] as num?)?.toInt() ?? 0,
+      emergencyContact: data['emergencyContact'] as String?,
+      medicalNotes: data['medicalNotes'] as String?,
+      bloodGroup: data['bloodGroup'] as String?,
+      schoolOrClub: data['schoolOrClub'] as String?,
+      createdAt: parseTimestamp(data['createdAt']),
+      updatedAt: parseTimestamp(data['updatedAt']),
     );
   }
 
@@ -75,6 +103,17 @@ class PlayerModel {
     'avatarUrl': avatarUrl,
     'coachId': coachId,
     'academyId': academyId,
+    'readinessStatus': readinessStatus,
+    'consistencyStreak': consistencyStreak,
+    'lastSessionTime': lastSessionTime != null ? Timestamp.fromDate(lastSessionTime!) : null,
+    'highestCertificateTitle': highestCertificateTitle,
+    'highestCertificateTier': highestCertificateTier,
+    'totalPbs': totalPbs,
+    'totalDrills': totalDrills,
+    'emergencyContact': emergencyContact,
+    'medicalNotes': medicalNotes,
+    'bloodGroup': bloodGroup,
+    'schoolOrClub': schoolOrClub,
     'createdAt': createdAt != null ? Timestamp.fromDate(createdAt!) : FieldValue.serverTimestamp(),
     'updatedAt': FieldValue.serverTimestamp(),
   };
@@ -93,6 +132,17 @@ class PlayerModel {
     String? avatarUrl,
     String? coachId,
     String? academyId,
+    String? readinessStatus,
+    int? consistencyStreak,
+    DateTime? lastSessionTime,
+    String? highestCertificateTitle,
+    int? highestCertificateTier,
+    int? totalPbs,
+    int? totalDrills,
+    String? emergencyContact,
+    String? medicalNotes,
+    String? bloodGroup,
+    String? schoolOrClub,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) =>
@@ -110,6 +160,17 @@ class PlayerModel {
         avatarUrl: avatarUrl ?? this.avatarUrl,
         coachId: coachId ?? this.coachId,
         academyId: academyId ?? this.academyId,
+        readinessStatus: readinessStatus ?? this.readinessStatus,
+        consistencyStreak: consistencyStreak ?? this.consistencyStreak,
+        lastSessionTime: lastSessionTime ?? this.lastSessionTime,
+        highestCertificateTitle: highestCertificateTitle ?? this.highestCertificateTitle,
+        highestCertificateTier: highestCertificateTier ?? this.highestCertificateTier,
+        totalPbs: totalPbs ?? this.totalPbs,
+        totalDrills: totalDrills ?? this.totalDrills,
+        emergencyContact: emergencyContact ?? this.emergencyContact,
+        medicalNotes: medicalNotes ?? this.medicalNotes,
+        bloodGroup: bloodGroup ?? this.bloodGroup,
+        schoolOrClub: schoolOrClub ?? this.schoolOrClub,
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt,
       );

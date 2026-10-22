@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '../theme/app_colors.dart';
-import '../theme/app_text_styles.dart';
+import '../../design_system/colors/app_colors.dart';
+import '../../design_system/typography/text_styles.dart';
+import '../../design_system/spacing/spacing_scale.dart';
 
 class SectionHeader extends StatelessWidget {
   const SectionHeader({
@@ -20,9 +21,13 @@ class SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? AppColors.textPrimary : AppColors.lightTextPrimary;
+    final secColor = isDark ? AppColors.textSecondary : AppColors.lightTextSecondary;
+
     return Padding(
       padding: padding ??
-          const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          const EdgeInsets.symmetric(horizontal: SpacingScale.s16, vertical: SpacingScale.s12),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -32,36 +37,34 @@ class SectionHeader extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: AppTextStyles.titleMedium,
+                  style: AppTextStyles.title2.copyWith(
+                    color: textColor,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 if (subtitle != null) ...[
-                  const SizedBox(height: 2),
+                  const SizedBox(height: SpacingScale.s2),
                   Text(
                     subtitle!,
-                    style: AppTextStyles.caption.copyWith(
-                      color: AppColors.textSecondary,
+                    style: AppTextStyles.captionXs.copyWith(
+                      color: secColor,
                     ),
                   ),
                 ],
               ],
             ),
           ),
-          if (actionLabel != null) ...[
-            TextButton(
-              onPressed: onActionTap,
-              style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                minimumSize: Size.zero,
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
+          if (actionLabel != null)
+            GestureDetector(
+              onTap: onActionTap,
               child: Text(
                 actionLabel!,
-                style: AppTextStyles.labelMedium.copyWith(
+                style: AppTextStyles.labelSm.copyWith(
                   color: AppColors.primary,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ),
-          ],
         ],
       ),
     );

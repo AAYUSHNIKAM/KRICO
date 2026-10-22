@@ -3,9 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_text_styles.dart';
+import '../../../design_system/colors/app_colors.dart';
+import '../../../design_system/typography/text_styles.dart';
+import '../../../design_system/spacing/spacing_scale.dart';
+import '../../../design_system/radius/radius.dart';
+import '../../../design_system/tokens/duration_tokens.dart';
 import '../../../providers/auth_provider.dart';
+
+const _logoGradient = [Color(0xFFCCFF00), Color(0xFF00E5FF)];
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -34,7 +39,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         context.go('/login');
       }
     });
-    // Fallback if stream hasn't emitted yet
     if (authState.asData == null) {
       final currentUser = FirebaseAuth.instance.currentUser;
       if (currentUser != null) {
@@ -95,7 +99,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                 height: 400,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.accent.withValues(alpha: 0.03),
+                  color: AppColors.purple.withValues(alpha: 0.03),
                 ),
               ),
             ),
@@ -107,33 +111,36 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                     width: 100,
                     height: 100,
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(colors: AppColors.gradientPrimary),
-                      borderRadius: BorderRadius.circular(30),
+                      gradient: const LinearGradient(colors: _logoGradient),
+                      borderRadius: AppRadius.brXl3,
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.primary.withValues(alpha: 0.3),
-                          blurRadius: 30,
+                          color: const Color(0xFFCCFF00).withValues(alpha: 0.4),
+                          blurRadius: 36,
                           offset: const Offset(0, 10),
                         ),
                       ],
                     ),
-                    child: const Icon(Icons.sports_rounded, size: 60, color: Colors.white),
-                  ).animate().scale(duration: 800.ms, curve: Curves.elasticOut),
-                  const SizedBox(height: 24),
+                    child: const Icon(Icons.sports_rounded, size: 60, color: Color(0xFF090A0F)),
+                  ).animate().scale(duration: DurationTokens.xl, curve: Curves.elasticOut),
+                  SizedBox(height: SpacingScale.s24),
                   Text(
-                    'SportsEco',
-                    style: AppTextStyles.displayLarge.copyWith(
+                    'KRICO',
+                    style: AppTextStyles.display.copyWith(
                       color: Colors.white,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: -1,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 2.0,
                     ),
-                  ).animate().fadeIn(duration: 600.ms, delay: 400.ms).slideY(begin: 0.3, end: 0),
-                  const SizedBox(height: 8),
+                  ).animate().fadeIn(duration: DurationTokens.slower, delay: 400.ms).slideY(begin: 0.3, end: 0),
+                  SizedBox(height: SpacingScale.s8),
                   Text(
-                    'Your Complete Sports Ecosystem',
-                    style: AppTextStyles.bodyLarge.copyWith(color: AppColors.textSecondary),
-                  ).animate().fadeIn(duration: 600.ms, delay: 800.ms).slideY(begin: 0.3, end: 0),
-                  const SizedBox(height: 60),
+                    'Krida • Coach • Community',
+                    style: AppTextStyles.bodyLg.copyWith(
+                      color: AppColors.textSecondary,
+                      letterSpacing: 0.8,
+                    ),
+                  ).animate().fadeIn(duration: DurationTokens.slower, delay: 800.ms).slideY(begin: 0.3, end: 0),
+                  SizedBox(height: SpacingScale.s64),
                   SizedBox(
                     width: 24,
                     height: 24,

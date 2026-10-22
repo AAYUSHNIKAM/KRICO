@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    body {
+        background: #06090F;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        padding: 24px;
+    }
+    .modal-container {
+        width: 480px;
+        background: #0D131F;
+        border-radius: 24px;
+        border: 3px solid #C7D2FE;
+        box-shadow: 0 8px 32px #818CF84D, 0 16px 40px rgba(0,0,0,0.8);
+        position: relative;
+        overflow: hidden;
+        padding: 26px 24px 22px 24px;
+        color: #fff;
+    }
+    .radial-glow {
+        position: absolute;
+        top: -60px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 320px;
+        height: 320px;
+        border-radius: 50%;
+        background: radial-gradient(circle, #818CF83D 0%, transparent 70%);
+        pointer-events: none;
+    }
+    .inner-border {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        right: 12px;
+        bottom: 12px;
+        border-radius: 16px;
+        border: 1.5px solid #F59E0B55;
+        pointer-events: none;
+    }
+    .crest-box {
+        width: 84px;
+        height: 84px;
+        margin: 10px auto 10px auto;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #818CF8, #4338CA);
+        border: 3.5px solid #F59E0B;
+        box-shadow: 0 4px 20px #818CF866;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 40px;
+    }
+    .close-btn {
+        position: absolute;
+        top: 18px;
+        right: 18px;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: rgba(0,0,0,0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #94A3B8;
+        font-size: 14px;
+    }
+    .header-banner {
+        text-align: center;
+        font-size: 9.5px;
+        font-weight: 800;
+        letter-spacing: 1.5px;
+        color: #F59E0B;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+    }
+    .cert-heading {
+        text-align: center;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        color: rgba(255,255,255,0.7);
+        margin-top: 4px;
+    }
+    .cert-title {
+        text-align: center;
+        font-size: 23px;
+        font-weight: 900;
+        color: #818CF8;
+        letter-spacing: 0.5px;
+        margin-top: 2px;
+    }
+    .conferred-line {
+        text-align: center;
+        font-size: 11.5px;
+        font-style: italic;
+        color: #94A3B8;
+        margin-top: 10px;
+    }
+    .athlete-name {
+        text-align: center;
+        font-size: 24px;
+        font-weight: 800;
+        color: #FFFFFF;
+        letter-spacing: 0.8px;
+        margin-top: 4px;
+    }
+    .sport-pill {
+        display: inline-block;
+        padding: 4px 12px;
+        background: #818CF81F;
+        border: 1px solid #818CF84D;
+        border-radius: 12px;
+        font-size: 10.5px;
+        font-weight: 700;
+        color: #818CF8;
+        margin-top: 6px;
+    }
+    .desc-text {
+        text-align: center;
+        font-size: 11.5px;
+        color: #94A3B8;
+        line-height: 1.45;
+        margin: 12px 10px 0 10px;
+    }
+    .stats-box {
+        background: rgba(0,0,0,0.4);
+        border: 1px solid #334155;
+        border-radius: 14px;
+        display: flex;
+        justify-content: space-around;
+        padding: 10px 12px;
+        margin-top: 14px;
+        text-align: center;
+    }
+    .stat-label { font-size: 8.5px; font-weight: 700; color: #64748B; letter-spacing: 0.8px; }
+    .stat-val { font-size: 12px; font-weight: 800; color: #fff; margin-top: 2px; }
+    .endorsement-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-top: 14px;
+    }
+    .seal-box {
+        padding: 5px 10px;
+        background: linear-gradient(135deg, #818CF826, #4338CA4D);
+        border: 1.5px solid #F59E0B;
+        border-radius: 8px;
+        text-align: center;
+    }
+    .hash-bar {
+        background: #06090F;
+        border: 1px solid #1E293B;
+        border-radius: 10px;
+        padding: 7px 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 12px;
+        font-family: monospace;
+        font-size: 10px;
+        color: #94A3B8;
+    }
+    .buttons-row {
+        display: flex;
+        gap: 8px;
+        margin-top: 14px;
+        align-items: center;
+    }
+    .btn-pdf {
+        flex: 1;
+        padding: 10px;
+        background: #F59E0B;
+        border: none;
+        color: #000;
+        border-radius: 10px;
+        font-weight: 800;
+        font-size: 11px;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+    }
+    .btn-share {
+        flex: 1;
+        padding: 10px;
+        background: #1E293B;
+        border: 1px solid #334155;
+        color: #fff;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 11px;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+    }
+    .btn-share-pdf {
+        width: 36px;
+        height: 36px;
+        background: #1E293B;
+        border: 1px solid #334155;
+        color: #fff;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+    }
+</style>
+</head>
+<body>
+<div class="modal-container">
+    <div class="radial-glow"></div>
+    <div class="inner-border"></div>
+    
+        <div style="position:absolute;top:14px;left:14px;color:#F59E0B;font-size:14px;">✦</div>
+        <div style="position:absolute;top:14px;right:48px;color:#F59E0B;font-size:14px;">✦</div>
+        <div style="position:absolute;top:auto;bottom:14px;left:14px;color:#F59E0B;font-size:14px;">✦</div>
+        <div style="position:absolute;top:auto;bottom:14px;right:14px;color:#F59E0B;font-size:14px;">✦</div>
+        
+    <div class="close-btn">✕</div>
+
+    <div class="header-banner">
+        <span>★</span>
+        <span>KRICO NATIONAL GRANDMASTER ACADEMY</span>
+        <span>★</span>
+    </div>
+
+    <div class="crest-box">💎</div>
+
+    <div class="cert-heading">ORDER OF THE GRANDMASTER ATHLETE</div>
+    <div class="cert-title">Grandmaster Athlete</div>
+    
+    <div style="text-align:center;">
+        <div style="margin-top:6px;display:inline-block;padding:2px 10px;background:#F59E0B18;border:1px solid #F59E0B55;border-radius:6px;font-size:9.5px;font-style:italic;font-weight:700;color:#F59E0B;letter-spacing:1px;">
+            ~ DECEM MILLIA VIRTUTIS ~
+        </div>
+        </div>
+
+    <div class="conferred-line">
+        By supreme decree of the board, conferred upon
+    </div>
+
+    <div class="athlete-name">ALEX RIVERA</div>
+
+    <div style="text-align:center;">
+        <div class="sport-pill">BADMINTON • GRANDMASTER RANK</div>
+    </div>
+
+    <div class="desc-text">Deca-Millennium career accomplishment. Demonstrated supreme athletic command.</div>
+
+    <div class="stats-box">
+        <div>
+            <div class="stat-label">MILESTONE</div>
+            <div class="stat-val" style="color:#818CF8;">10000 XP</div>
+        </div>
+        <div style="width:1px;background:#334155;"></div>
+        <div>
+            <div class="stat-label">TIER RANK</div>
+            <div class="stat-val">Prestige 11 / 15</div>
+        </div>
+        <div style="width:1px;background:#334155;"></div>
+        <div>
+            <div class="stat-label">DATE ISSUED</div>
+            <div class="stat-val">Oct 10, 2026</div>
+        </div>
+    </div>
+
+    <div class="endorsement-row">
+        <div>
+            <div style="font-size:8.5px;font-weight:800;color:#64748B;letter-spacing:1px;">
+                EXECUTIVE BOARD ACCREDITATION
+            </div>
+            <div style="font-size:12px;font-weight:700;color:#fff;margin-top:2px;">Coach David Vance</div>
+            <div style="font-size:9px;color:#94A3B8;margin-top:1px;">Master Lead Coach • Academy Technical Director • State Athletic Board</div>
+        </div>
+        <div class="seal-box">
+            <div style="font-size:14px;color:#F59E0B;">★</div>
+            <div style="font-size:7.5px;font-weight:900;color:#F59E0B;letter-spacing:0.5px;">
+                DECA-MILLENNIUM DIAMOND SEAL
+            </div>
+        </div>
+    </div>
+
+    
+
+    <div class="hash-bar">
+        <span>🔒 HASH: KRC-2026-T11-3973</span>
+        <span style="color:#818CF8;cursor:pointer;">📋</span>
+    </div>
+
+    <div class="buttons-row">
+        <div class="btn-pdf">📄 Download PDF</div>
+        <div class="btn-share">📷 Share Image</div>
+        <div class="btn-share-pdf">📤</div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 abstract final class ElevationTokens {
   ElevationTokens._();
 

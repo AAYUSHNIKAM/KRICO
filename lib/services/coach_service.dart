@@ -207,4 +207,75 @@ class CoachService {
         .where('coachId', isEqualTo: coachId)
         .snapshots();
   }
+
+  Stream<QuerySnapshot<Map<String, dynamic>>> getPendingBookings(String coachId) {
+    return _firestore
+        .collection('sessions')
+        .where('coachId', isEqualTo: coachId)
+        .where('status', isEqualTo: 'booked')
+        .snapshots();
+  }
+
+  Future<void> respondToBooking(String sessionId, String newStatus) async {
+    final sessionDoc = await _firestore.collection('sessions').doc(sessionId).get();
+    await _firestore.collection('sessions').doc(sessionId).update({
+      'status': newStatus,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+    if (newStatus == 'confirmed' && sessionDoc.exists) {
+      final data = sessionDoc.data()!;
+      final playerId = data['playerId'] as String?;
+      final coachId = data['coachId'] as String?;
+      if (playerId != null && coachId != null) {
+        await _firestore.collection('players').doc(playerId).set({
+          'coachId': coachId,
+          'coachIds': FieldValue.arrayUnion([coachId]),
+          'updatedAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
+      }
+    }
+  }
+
+  Future<void> checkInSession(String sessionId) async {
+    await _firestore.collection('sessions').doc(sessionId).update({
+      'status': 'checked_in',
+      'checkedInAt': FieldValue.serverTimestamp(),
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  Future<void> checkOutSession(String sessionId) async {
+    await _firestore.collection('sessions').doc(sessionId).update({
+      'status': 'completed',
+      'checkedOutAt': FieldValue.serverTimestamp(),
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  Future<void> rescheduleSession(String sessionId, DateTime newDateTime) async {
+    await _firestore.collection('sessions').doc(sessionId).update({
+      'dateTime': Timestamp.fromDate(newDateTime),
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  Future<Map<String, dynamic>?> getSessionById(String sessionId) async {
+    final doc = await _firestore.collection('sessions').doc(sessionId).get();
+    if (!doc.exists) return null;
+    return {...doc.data()!, 'sessionId': doc.id};
+  }
+
+  Future<void> assignCoachToAcademy(String coachId, String academyId) async {
+    await _firestore.collection('coaches').doc(coachId).update({
+      'academyId': academyId,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  Future<void> removeCoachFromAcademy(String coachId) async {
+    await _firestore.collection('coaches').doc(coachId).update({
+      'academyId': FieldValue.delete(),
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
 }

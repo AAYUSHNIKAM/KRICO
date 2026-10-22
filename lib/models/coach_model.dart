@@ -1,10 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-
-DateTime? _parseTimestamp(dynamic value) {
-  if (value is Timestamp) return value.toDate();
-  if (value is String) return DateTime.tryParse(value);
-  return null;
-}
+import '../core/utils/date_parser.dart';
 
 class CoachModel {
   const CoachModel({
@@ -15,6 +10,7 @@ class CoachModel {
     this.photoUrl,
     this.city,
     this.specialization,
+    this.sports,
     this.experience = 0,
     this.hourlyRate = 0,
     this.bio,
@@ -27,6 +23,8 @@ class CoachModel {
     this.workExperience,
     this.isVerified = false,
     this.academyId,
+    this.leadTimeHours = 2,
+    this.penaltyBalance = 0.0,
     this.createdAt,
     this.updatedAt,
   });
@@ -38,6 +36,7 @@ class CoachModel {
   final String? photoUrl;
   final String? city;
   final String? specialization;
+  final List<String>? sports;
   final int experience;
   final double hourlyRate;
   final String? bio;
@@ -50,6 +49,8 @@ class CoachModel {
   final List<Map<String, dynamic>>? workExperience;
   final bool isVerified;
   final String? academyId;
+  final int leadTimeHours;
+  final double penaltyBalance;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -63,6 +64,14 @@ class CoachModel {
       photoUrl: data['photoUrl'] as String?,
       city: data['city'] as String?,
       specialization: data['specialization'] as String?,
+      sports: (data['sports'] as List<dynamic>?)?.cast<String>() ??
+          (data['specialization'] is String
+              ? (data['specialization'] as String)
+                  .split(',')
+                  .map((e) => e.trim())
+                  .where((e) => e.isNotEmpty)
+                  .toList()
+              : null),
       experience: (data['experience'] as num?)?.toInt() ?? 0,
       hourlyRate: (data['hourlyRate'] as num?)?.toDouble() ?? 0,
       bio: data['bio'] as String?,
@@ -70,15 +79,17 @@ class CoachModel {
       totalReviews: (data['totalReviews'] as num?)?.toInt() ?? 0,
       subscriptionTier: data['subscriptionTier'] as String? ?? 'Starter',
       isSubscribed: data['isSubscribed'] as bool? ?? false,
-      subscriptionExpiry: _parseTimestamp(data['subscriptionExpiry']),
+      subscriptionExpiry: parseTimestamp(data['subscriptionExpiry']),
       certificates: (data['certificates'] as List<dynamic>?)?.cast<String>(),
       workExperience: (data['workExperience'] as List<dynamic>?)
           ?.map((e) => Map<String, dynamic>.from(e as Map))
           .toList(),
       isVerified: data['isVerified'] as bool? ?? false,
       academyId: data['academyId'] as String?,
-      createdAt: _parseTimestamp(data['createdAt']),
-      updatedAt: _parseTimestamp(data['updatedAt']),
+      leadTimeHours: (data['leadTimeHours'] as num?)?.toInt() ?? 2,
+      penaltyBalance: (data['penaltyBalance'] as num?)?.toDouble() ?? 0.0,
+      createdAt: parseTimestamp(data['createdAt']),
+      updatedAt: parseTimestamp(data['updatedAt']),
     );
   }
 
@@ -89,6 +100,7 @@ class CoachModel {
     'photoUrl': photoUrl,
     'city': city,
     'specialization': specialization,
+    'sports': sports,
     'experience': experience,
     'hourlyRate': hourlyRate,
     'bio': bio,
@@ -103,6 +115,8 @@ class CoachModel {
     'workExperience': workExperience,
     'isVerified': isVerified,
     'academyId': academyId,
+    'leadTimeHours': leadTimeHours,
+    'penaltyBalance': penaltyBalance,
     'updatedAt': FieldValue.serverTimestamp(),
   };
 }

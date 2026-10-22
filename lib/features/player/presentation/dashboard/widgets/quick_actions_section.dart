@@ -49,14 +49,14 @@ class QuickActionsSection extends ConsumerWidget {
         iconBg: AppColors.orange,
         title: 'Performance',
         subtitle: 'Track your progress',
-        route: 'performance',
+        route: '/performance',
       ),
       _ActionData(
         icon: Icons.calendar_month_rounded,
         iconBg: AppColors.warning,
         title: 'Sessions',
         subtitle: 'View your schedule',
-        route: 'sessions',
+        route: '/bookings',
       ),
       _ActionData(
         icon: Icons.emoji_events_rounded,
@@ -175,12 +175,20 @@ class _ActionCardState extends State<_ActionCard> {
                 boxShadow: _hovered
                     ? [
                         BoxShadow(
-                          color: widget.data.iconBg.withValues(alpha: 0.15),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
+                          color: widget.data.iconBg.withValues(alpha: 0.18),
+                          blurRadius: 16,
+                          offset: const Offset(0, 6),
                         ),
                       ]
-                    : null,
+                    : (isDark
+                        ? null
+                        : const [
+                            BoxShadow(
+                              color: Color(0x0A0F172A),
+                              blurRadius: 10,
+                              offset: Offset(0, 2),
+                            ),
+                          ]),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(SpacingScale.s12),

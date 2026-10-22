@@ -6,6 +6,7 @@ class PremiumNavItem {
   final String label;
   final String? badge;
   final bool bottomNavOnly;
+  final String section;
 
   const PremiumNavItem({
     required this.icon,
@@ -13,5 +14,6 @@ class PremiumNavItem {
     required this.label,
     this.badge,
     this.bottomNavOnly = false,
+    this.section = 'Workspace',
   });
 }

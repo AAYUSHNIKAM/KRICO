@@ -4,7 +4,6 @@ import '../../typography/text_styles.dart';
 import '../../radius/radius.dart';
 import '../../spacing/spacing_scale.dart';
 import '../../tokens/duration_tokens.dart';
-import '../../tokens/opacity_tokens.dart';
 import 'button_types.dart';
 
 class PrimaryButton extends StatefulWidget {

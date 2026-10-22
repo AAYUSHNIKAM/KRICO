@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Sports App</string>
+	<string>SportsEco</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -15,7 +15,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>sports_app</string>
+	<string>SportsEco</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -59,12 +59,13 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-	<key>UISupportedInterfaceOrientations~ipad</key>
-	<array>
-		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationPortraitUpsideDown</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
-	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>SportsEco requires camera access to record training footage for AI form analysis and profile updates.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>SportsEco requires photo library access to upload practice videos, avatar photos, and community media.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>SportsEco requires microphone access for audio recording during training video capture.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>SportsEco uses your location to discover nearby sports venues and coaching facilities.</string>
 </dict>
 </plist>

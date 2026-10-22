@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_text_styles.dart';
-import '../../../core/widgets/gradient_button.dart';
+import '../../../design_system/colors/app_colors.dart';
+import '../../../design_system/typography/text_styles.dart';
+import '../../../design_system/widgets/page_headers/page_hero.dart';
+import '../../../design_system/radius/radius.dart';
+import '../../../design_system/tokens/duration_tokens.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../services/providers.dart';
 
@@ -26,6 +28,13 @@ class _CreateSessionScreenState extends ConsumerState<CreateSessionScreen> {
   TimeOfDay? _selectedTime;
   bool _isOnline = false;
   bool _isCreating = false;
+  bool _hovered = false;
+  bool _titleFocused = false;
+  bool _sportFocused = false;
+  bool _descFocused = false;
+  bool _capacityFocused = false;
+  bool _venueFocused = false;
+  bool _priceFocused = false;
 
   @override
   void dispose() {
@@ -40,92 +49,68 @@ class _CreateSessionScreenState extends ConsumerState<CreateSessionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final authState = ref.watch(authStateProvider);
-    final coachId = authState.value?.uid ?? '';
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       body: CustomScrollView(
         slivers: [
-          SliverAppBar(
+          PageHero(
+            title: 'Create Session',
+            subtitle: 'Set up a new training session',
+            gradientColors: [AppColors.primary, AppColors.primaryLight],
             expandedHeight: 120,
-            pinned: true,
-            flexibleSpace: FlexibleSpaceBar(
-              background: Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: AppColors.gradientPrimary,
-                  ),
-                ),
-                padding: const EdgeInsets.fromLTRB(20, 60, 20, 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Text('Create Session', style: AppTextStyles.headlineMedium.copyWith(color: Colors.white, fontWeight: FontWeight.w700)),
-                    Text('Set up a new training session', style: AppTextStyles.bodySmall.copyWith(color: Colors.white70)),
-                  ],
-                ),
-              ),
-            ),
+            showPhoneHeader: true,
           ),
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-                Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildField('Session Title', _titleCtrl, Icons.title_rounded, 'e.g., Cricket Bowling Practice'),
-                      const SizedBox(height: 14),
-                      _buildField('Sport', _sportCtrl, Icons.sports_rounded, 'e.g., Cricket'),
-                      const SizedBox(height: 14),
-                      _buildField('Description', _descCtrl, Icons.description_rounded, 'Session details...', maxLines: 3),
-                      const SizedBox(height: 14),
-                      Row(
+                Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 640),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Expanded(
-                            child: _buildDateField(context),
+                          _buildField('Session Title', _titleCtrl, Icons.title_rounded, 'e.g., Cricket Bowling Practice', isDark, _titleFocused, (v) => setState(() => _titleFocused = v)),
+                          const SizedBox(height: 14),
+                          _buildField('Sport', _sportCtrl, Icons.sports_rounded, 'e.g., Cricket', isDark, _sportFocused, (v) => setState(() => _sportFocused = v)),
+                          const SizedBox(height: 14),
+                          _buildField('Description', _descCtrl, Icons.description_rounded, 'Session details...', isDark, _descFocused, (v) => setState(() => _descFocused = v), maxLines: 3),
+                          const SizedBox(height: 14),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _buildDateField(context, isDark),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: _buildTimeField(context, isDark),
+                              ),
+                            ],
                           ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _buildTimeField(context),
+                          const SizedBox(height: 14),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _buildField('Capacity', _capacityCtrl, Icons.people_rounded, 'e.g., 10', isDark, _capacityFocused, (v) => setState(() => _capacityFocused = v), keyboardType: TextInputType.number),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: _buildField('Price (₹)', _priceCtrl, Icons.currency_rupee_rounded, 'e.g., 500', isDark, _priceFocused, (v) => setState(() => _priceFocused = v), keyboardType: TextInputType.number),
+                              ),
+                            ],
                           ),
+                          const SizedBox(height: 14),
+                          _buildField('Venue', _venueCtrl, Icons.location_on_rounded, 'e.g., Sports Complex', isDark, _venueFocused, (v) => setState(() => _venueFocused = v)),
+                          const SizedBox(height: 14),
+                          _buildOnlineToggle(isDark),
+                          const SizedBox(height: 24),
+                          _buildCreateButton(),
                         ],
                       ),
-                      const SizedBox(height: 14),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildField('Capacity', _capacityCtrl, Icons.people_rounded, 'e.g., 10', keyboardType: TextInputType.number),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _buildField('Price (₹)', _priceCtrl, Icons.currency_rupee_rounded, 'e.g., 500', keyboardType: TextInputType.number),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 14),
-                      _buildField('Venue', _venueCtrl, Icons.location_on_rounded, 'e.g., Sports Complex'),
-                      const SizedBox(height: 14),
-                      SwitchListTile(
-                        title: const Text('Online Session', style: TextStyle(color: AppColors.textPrimary)),
-                        subtitle: const Text('Conduct session virtually', style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
-                        value: _isOnline,
-                        onChanged: (v) => setState(() => _isOnline = v),
-                        activeColor: AppColors.primary,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 4),
-                      ),
-                      const SizedBox(height: 24),
-                      GradientButton(
-                        onPressed: _isCreating ? null : () => _createSession(coachId),
-                        isLoading: _isCreating,
-                        child: const Text('Create Session', style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w700)),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
               ]),
@@ -136,98 +121,204 @@ class _CreateSessionScreenState extends ConsumerState<CreateSessionScreen> {
     );
   }
 
-  Widget _buildField(String label, TextEditingController ctrl, IconData icon, String hint, {int maxLines = 1, TextInputType? keyboardType}) {
-    return TextFormField(
-      controller: ctrl,
-      maxLines: maxLines,
-      keyboardType: keyboardType,
-      style: AppTextStyles.bodyMedium,
-      validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
-      decoration: InputDecoration(
-        labelText: label,
-        hintText: hint,
-        labelStyle: AppTextStyles.labelMedium.copyWith(color: AppColors.textSecondary),
-        hintStyle: AppTextStyles.bodySmall.copyWith(color: AppColors.textDim),
-        prefixIcon: Icon(icon, size: 20, color: AppColors.textSecondary),
-        filled: true,
-        fillColor: AppColors.surfaceMid,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.borderLight)),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.borderLight.withValues(alpha: 0.5))),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.primary, width: 1.5)),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+  Widget _buildOnlineToggle(bool isDark) {
+    final textPrimary = isDark ? AppColors.textPrimary : AppColors.lightTextPrimary;
+    final textSecondary = isDark ? AppColors.textSecondary : AppColors.lightTextSecondary;
+    return GestureDetector(
+      onTap: () => setState(() => _isOnline = !_isOnline),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Online Session', style: AppTextStyles.body.copyWith(color: textPrimary)),
+                Text('Conduct session virtually', style: AppTextStyles.bodySm.copyWith(color: textSecondary)),
+              ],
+            ),
+          ),
+          AnimatedContainer(
+            duration: DurationTokens.fast,
+            width: 48,
+            height: 26,
+            decoration: BoxDecoration(
+              color: _isOnline ? AppColors.primary : (isDark ? AppColors.surfaceSecondary : AppColors.lightSurfaceSecondary),
+              borderRadius: AppRadius.brFull,
+            ),
+            child: AnimatedAlign(
+              duration: DurationTokens.fast,
+              alignment: _isOnline ? Alignment.centerRight : Alignment.centerLeft,
+              child: Container(
+                width: 22,
+                height: 22,
+                margin: const EdgeInsets.symmetric(horizontal: 2),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: AppRadius.brFull,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.2),
+                      blurRadius: 4,
+                      offset: const Offset(0, 1),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildDateField(BuildContext context) {
-    return TextFormField(
-      readOnly: true,
-      style: AppTextStyles.bodyMedium,
-      decoration: InputDecoration(
-        labelText: 'Date',
-        hintText: 'Select date',
-        labelStyle: AppTextStyles.labelMedium.copyWith(color: AppColors.textSecondary),
-        hintStyle: AppTextStyles.bodySmall.copyWith(color: AppColors.textDim),
-        prefixIcon: const Icon(Icons.calendar_today_rounded, size: 20, color: AppColors.textSecondary),
-        filled: true,
-        fillColor: AppColors.surfaceMid,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.borderLight)),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.borderLight.withValues(alpha: 0.5))),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.primary, width: 1.5)),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-      ),
-      controller: TextEditingController(text: _selectedDate != null ? '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}' : ''),
-      validator: (v) => _selectedDate == null ? 'Select a date' : null,
-      onTap: () async {
-        final date = await showDatePicker(
-          context: context,
-          initialDate: DateTime.now().add(const Duration(days: 1)),
-          firstDate: DateTime.now(),
-          lastDate: DateTime.now().add(const Duration(days: 90)),
-          builder: (context, child) => Theme(
-            data: Theme.of(context).copyWith(
-              colorScheme: const ColorScheme.dark(primary: AppColors.primary, surface: AppColors.cardDark),
-            ),
-            child: child!,
+  Widget _buildCreateButton() {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: GestureDetector(
+        onTap: _isCreating ? null : () => _createSession(ref.read(authStateProvider).value?.uid ?? ''),
+        child: AnimatedContainer(
+          duration: DurationTokens.fast,
+          height: 52,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(colors: _hovered ? [AppColors.primaryHover, AppColors.primary] : [AppColors.primary, AppColors.primaryLight]),
+            borderRadius: AppRadius.brXl2,
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withValues(alpha: _hovered ? 0.4 : 0.2),
+                blurRadius: _hovered ? 20 : 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
-        );
-        if (date != null) setState(() => _selectedDate = date);
-      },
+          child: Center(
+            child: _isCreating
+                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                : Text('Create Session', style: AppTextStyles.buttonLg.copyWith(color: Colors.white)),
+          ),
+        ),
+      ),
     );
   }
 
-  Widget _buildTimeField(BuildContext context) {
-    return TextFormField(
-      readOnly: true,
-      style: AppTextStyles.bodyMedium,
-      decoration: InputDecoration(
-        labelText: 'Time',
-        hintText: 'Select time',
-        labelStyle: AppTextStyles.labelMedium.copyWith(color: AppColors.textSecondary),
-        hintStyle: AppTextStyles.bodySmall.copyWith(color: AppColors.textDim),
-        prefixIcon: const Icon(Icons.access_time_rounded, size: 20, color: AppColors.textSecondary),
-        filled: true,
-        fillColor: AppColors.surfaceMid,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.borderLight)),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.borderLight.withValues(alpha: 0.5))),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.primary, width: 1.5)),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+  Widget _buildField(String label, TextEditingController ctrl, IconData icon, String hint, bool isDark, bool focused, ValueChanged<bool> onFocusChanged, {int maxLines = 1, TextInputType? keyboardType}) {
+    final textPrimary = isDark ? AppColors.textPrimary : AppColors.lightTextPrimary;
+    final textSecondary = isDark ? AppColors.textSecondary : AppColors.lightTextSecondary;
+    final borderColor = isDark ? AppColors.border : AppColors.lightBorder;
+    return AnimatedContainer(
+      duration: DurationTokens.fast,
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.surfaceSecondary : AppColors.lightSurfaceSecondary,
+        borderRadius: AppRadius.brLg,
+        border: Border.all(color: focused ? AppColors.primary : borderColor, width: focused ? 1.5 : 1),
       ),
-      controller: TextEditingController(text: _selectedTime != null ? _selectedTime!.format(context) : ''),
-      validator: (v) => _selectedTime == null ? 'Select a time' : null,
-      onTap: () async {
-        final time = await showTimePicker(
-          context: context,
-          initialTime: TimeOfDay.now(),
-          builder: (context, child) => Theme(
-            data: Theme.of(context).copyWith(
-              colorScheme: const ColorScheme.dark(primary: AppColors.primary, surface: AppColors.cardDark),
-            ),
-            child: child!,
+      child: Focus(
+        onFocusChange: onFocusChanged,
+        child: TextFormField(
+          controller: ctrl,
+          maxLines: maxLines,
+          keyboardType: keyboardType,
+          style: AppTextStyles.body.copyWith(color: textPrimary),
+          validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+          decoration: InputDecoration(
+            labelText: label,
+            hintText: hint,
+            labelStyle: AppTextStyles.body.copyWith(color: textSecondary),
+            hintStyle: AppTextStyles.bodySm.copyWith(color: isDark ? AppColors.textTertiary : AppColors.lightTextTertiary),
+            prefixIcon: Icon(icon, size: 20, color: textSecondary),
+            border: InputBorder.none,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           ),
-        );
-        if (time != null) setState(() => _selectedTime = time);
-      },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDateField(BuildContext context, bool isDark) {
+    final textPrimary = isDark ? AppColors.textPrimary : AppColors.lightTextPrimary;
+    final textSecondary = isDark ? AppColors.textSecondary : AppColors.lightTextSecondary;
+    final borderColor = isDark ? AppColors.border : AppColors.lightBorder;
+    return AnimatedContainer(
+      duration: DurationTokens.fast,
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.surfaceSecondary : AppColors.lightSurfaceSecondary,
+        borderRadius: AppRadius.brLg,
+        border: Border.all(color: borderColor, width: 1),
+      ),
+      child: TextFormField(
+        readOnly: true,
+        style: AppTextStyles.body.copyWith(color: textPrimary),
+        decoration: InputDecoration(
+          labelText: 'Date',
+          hintText: 'Select date',
+          labelStyle: AppTextStyles.body.copyWith(color: textSecondary),
+          hintStyle: AppTextStyles.bodySm.copyWith(color: isDark ? AppColors.textTertiary : AppColors.lightTextTertiary),
+          prefixIcon: const Icon(Icons.calendar_today_rounded, size: 20),
+          prefixIconColor: textSecondary,
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        ),
+        controller: TextEditingController(text: _selectedDate != null ? '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}' : ''),
+        validator: (v) => _selectedDate == null ? 'Select a date' : null,
+        onTap: () async {
+          final date = await showDatePicker(
+            context: context,
+            initialDate: DateTime.now().add(const Duration(days: 1)),
+            firstDate: DateTime.now(),
+            lastDate: DateTime.now().add(const Duration(days: 90)),
+            builder: (context, child) => Theme(
+              data: Theme.of(context).copyWith(
+                colorScheme: ColorScheme.dark(primary: AppColors.primary, surface: isDark ? AppColors.surface : AppColors.lightSurface),
+              ),
+              child: child!,
+            ),
+          );
+          if (date != null) setState(() => _selectedDate = date);
+        },
+      ),
+    );
+  }
+
+  Widget _buildTimeField(BuildContext context, bool isDark) {
+    final textPrimary = isDark ? AppColors.textPrimary : AppColors.lightTextPrimary;
+    final textSecondary = isDark ? AppColors.textSecondary : AppColors.lightTextSecondary;
+    final borderColor = isDark ? AppColors.border : AppColors.lightBorder;
+    return AnimatedContainer(
+      duration: DurationTokens.fast,
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.surfaceSecondary : AppColors.lightSurfaceSecondary,
+        borderRadius: AppRadius.brLg,
+        border: Border.all(color: borderColor, width: 1),
+      ),
+      child: TextFormField(
+        readOnly: true,
+        style: AppTextStyles.body.copyWith(color: textPrimary),
+        decoration: InputDecoration(
+          labelText: 'Time',
+          hintText: 'Select time',
+          labelStyle: AppTextStyles.body.copyWith(color: textSecondary),
+          hintStyle: AppTextStyles.bodySm.copyWith(color: isDark ? AppColors.textTertiary : AppColors.lightTextTertiary),
+          prefixIcon: const Icon(Icons.access_time_rounded, size: 20),
+          prefixIconColor: textSecondary,
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        ),
+        controller: TextEditingController(text: _selectedTime != null ? _selectedTime!.format(context) : ''),
+        validator: (v) => _selectedTime == null ? 'Select a time' : null,
+        onTap: () async {
+          final time = await showTimePicker(
+            context: context,
+            initialTime: TimeOfDay.now(),
+            builder: (context, child) => Theme(
+              data: Theme.of(context).copyWith(
+                colorScheme: ColorScheme.dark(primary: AppColors.primary, surface: isDark ? AppColors.surface : AppColors.lightSurface),
+              ),
+              child: child!,
+            ),
+          );
+          if (time != null) setState(() => _selectedTime = time);
+        },
+      ),
     );
   }
 
@@ -260,7 +351,7 @@ class _CreateSessionScreenState extends ConsumerState<CreateSessionScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed: $e'), backgroundColor: AppColors.error),
+          SnackBar(content: Text('Failed: $e'), backgroundColor: AppColors.danger),
         );
       }
     } finally {

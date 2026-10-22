@@ -42,7 +42,7 @@ class HeroSection extends ConsumerWidget {
             sessions: const [],
             playerName: playerName,
           ),
-          error: (_, __) => _HeroContent(
+          error: (_, _) => _HeroContent(
             player: player,
             sessions: const [],
             playerName: playerName,
@@ -50,7 +50,7 @@ class HeroSection extends ConsumerWidget {
         );
       },
       loading: () => const DashboardHeaderShimmer(),
-      error: (_, __) => const DashboardHeaderShimmer(),
+      error: (_, _) => const DashboardHeaderShimmer(),
     );
   }
 }
@@ -103,8 +103,9 @@ class _HeroContent extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isDesktop = context.isDesktop;
     final isTablet = context.isTablet;
+    final isPhone = context.isPhone;
     final padH = isDesktop ? SpacingScale.s32 : (isTablet ? SpacingScale.s24 : SpacingScale.s16);
-    final padT = isDesktop ? SpacingScale.s48 : (isTablet ? SpacingScale.s40 : SpacingScale.s32);
+    final padT = isPhone ? SpacingScale.s20 : (isDesktop ? SpacingScale.s48 : SpacingScale.s40);
     final textColor = isDark ? AppColors.textPrimary : AppColors.lightTextPrimary;
     final secColor = isDark ? AppColors.textSecondary : AppColors.lightTextSecondary;
     final hour = DateTime.now().hour;
@@ -148,21 +149,8 @@ class _HeroContent extends StatelessWidget {
     final quote = motivationalQuotes[_dayOfYear() % motivationalQuotes.length];
 
     return Container(
-      padding: EdgeInsets.fromLTRB(padH, padT, padH, SpacingScale.s24),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: isDark
-              ? [
-                  AppColors.surface,
-                  AppColors.surface.withValues(alpha: 0.95),
-                ]
-              : [
-                  AppColors.lightSurface,
-                  AppColors.lightSurface,
-                ],
-        ),
+        color: isDark ? const Color(0xFF0B0E14) : AppColors.lightSurface,
         border: Border(
           bottom: BorderSide(
             color: isDark ? AppColors.border : AppColors.lightBorder,
@@ -170,102 +158,161 @@ class _HeroContent extends StatelessWidget {
           ),
         ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Stack(
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      dateStr.toUpperCase(),
-                      style: AppTextStyles.captionXs.copyWith(
-                        color: secColor,
-                        letterSpacing: 1.2,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ).animate().fadeIn(duration: 200.ms, curve: Curves.easeOut).slideY(begin: -0.04, end: 0),
-                    const SizedBox(height: SpacingScale.s12),
-                    Text(
-                      '$greeting,',
-                      style: AppTextStyles.title2.copyWith(color: secColor),
-                    ).animate(delay: 50.ms).fadeIn(duration: 250.ms, curve: Curves.easeOut).slideY(begin: -0.04, end: 0),
-                    const SizedBox(height: SpacingScale.s2),
-                    Text(
-                      playerName,
-                      style: AppTextStyles.heading1.copyWith(
-                        color: textColor,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ).animate(delay: 100.ms).fadeIn(duration: 300.ms, curve: Curves.easeOut).slideY(begin: -0.04, end: 0),
-                    const SizedBox(height: SpacingScale.s8),
-                    Row(
-                      children: [
-                        Icon(Icons.format_quote_rounded, size: 14, color: AppColors.emerald.withValues(alpha: 0.6)),
-                        const SizedBox(width: SpacingScale.s6),
-                        Text(quote, style: AppTextStyles.bodyLg.copyWith(
-                          color: secColor,
-                          fontStyle: FontStyle.italic,
-                        )),
-                      ],
-                    ).animate(delay: 150.ms).fadeIn(duration: 250.ms, curve: Curves.easeOut).slideY(begin: -0.03, end: 0),
+          Positioned.fill(
+            child: Opacity(
+              opacity: isDark ? 0.22 : 0.08,
+              child: Image.asset(
+                'assets/backgrounds/athletic_track.jpg',
+                fit: BoxFit.cover,
+                errorBuilder: (_, _, _) => const SizedBox.shrink(),
+              ),
+            ),
+          ),
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withValues(alpha: isDark ? 0.35 : 0.02),
+                    (isDark ? const Color(0xFF0B0E14) : Colors.white).withValues(alpha: isDark ? 0.95 : 0.9),
                   ],
                 ),
               ),
-              const SizedBox(width: SpacingScale.s16),
-              _StreakBadge(streak: streak),
-            ],
+            ),
           ),
-          const SizedBox(height: SpacingScale.s20),
-          Row(
-            children: [
-              _Pill(text: 'Training Day $trainingDayCount', color: AppColors.primary),
-              const SizedBox(width: SpacingScale.s8),
-              _Pill(text: '${level.icon} ${level.title}', color: AppColors.emerald),
-              const SizedBox(width: SpacingScale.s8),
-              _Pill(text: 'Rank #${player.rank}', color: AppColors.purple),
-            ],
-          ).animate(delay: 150.ms).fadeIn(duration: 300.ms, curve: Curves.easeOut),
-          const SizedBox(height: SpacingScale.s24),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('${player.points} XP', style: AppTextStyles.title2.copyWith(
-                    color: isDark ? AppColors.textPrimary : AppColors.lightTextPrimary,
-                    fontWeight: FontWeight.w600,
-                  )),
-                  Text('Level ${level.title}', style: AppTextStyles.caption.copyWith(
-                    color: isDark ? AppColors.textSecondary : AppColors.lightTextSecondary,
-                  )),
-                ],
-              ),
-              const SizedBox(height: SpacingScale.s8),
-              ClipRRect(
-                borderRadius: AppRadius.brFull,
-                child: TweenAnimationBuilder<double>(
-                  tween: Tween(begin: 0, end: xpProgress),
-                  duration: DurationTokens.long,
-                  curve: Curves.easeOutCubic,
-                  builder: (context, value, _) => LinearProgressIndicator(
-                    value: value,
-                    minHeight: 6,
-                    backgroundColor: isDark ? AppColors.divider : AppColors.lightDivider,
-                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.emerald),
-                  ),
+          Padding(
+            padding: EdgeInsets.fromLTRB(padH, padT, padH, isPhone ? SpacingScale.s16 : SpacingScale.s24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFCCFF00),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: const Text(
+                              'ATHLETE GROWTH & TELEMETRY',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 9.5,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 0.8,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: SpacingScale.s10),
+                          Text(
+                            dateStr.toUpperCase(),
+                            style: AppTextStyles.captionXs.copyWith(
+                              color: secColor,
+                              letterSpacing: 1.2,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ).animate().fadeIn(duration: 200.ms, curve: Curves.easeOut).slideY(begin: -0.04, end: 0),
+                          const SizedBox(height: SpacingScale.s4),
+                          Text(
+                            '$greeting,',
+                            style: AppTextStyles.title2.copyWith(color: secColor),
+                          ).animate(delay: 50.ms).fadeIn(duration: 250.ms, curve: Curves.easeOut).slideY(begin: -0.04, end: 0),
+                          const SizedBox(height: SpacingScale.s2),
+                          Text(
+                            playerName,
+                            style: AppTextStyles.heading1.copyWith(
+                              color: textColor,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ).animate(delay: 100.ms).fadeIn(duration: 300.ms, curve: Curves.easeOut).slideY(begin: -0.04, end: 0),
+                          if (!isPhone) ...[
+                            const SizedBox(height: SpacingScale.s8),
+                            Row(
+                              children: [
+                                Icon(Icons.format_quote_rounded, size: 14, color: AppColors.emerald.withValues(alpha: 0.6)),
+                                const SizedBox(width: SpacingScale.s6),
+                                Text(quote, style: AppTextStyles.bodyLg.copyWith(
+                                  color: secColor,
+                                  fontStyle: FontStyle.italic,
+                                )),
+                              ],
+                            ).animate(delay: 150.ms).fadeIn(duration: 250.ms, curve: Curves.easeOut).slideY(begin: -0.03, end: 0),
+                          ],
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: SpacingScale.s16),
+                    _StreakBadge(streak: streak),
+                  ],
                 ),
-              ),
-              const SizedBox(height: SpacingScale.s6),
-              Text('$levelProgress / $levelThreshold XP to next level', style: AppTextStyles.captionXs.copyWith(
-                color: isDark ? AppColors.textTertiary : AppColors.lightTextTertiary,
-              )),
-            ],
-          ).animate(delay: 200.ms).fadeIn(duration: 350.ms, curve: Curves.easeOut).slideY(begin: 0.06, end: 0),
+                const SizedBox(height: SpacingScale.s16),
+                if (isPhone)
+                  Wrap(
+                    spacing: SpacingScale.s8,
+                    runSpacing: SpacingScale.s8,
+                    children: [
+                      _Pill(text: 'Training Day $trainingDayCount', color: const Color(0xFFCCFF00)),
+                      _Pill(text: '${level.icon} ${level.title}', color: AppColors.emerald),
+                      _Pill(text: 'Rank #${player.rank}', color: const Color(0xFF00E5FF)),
+                    ],
+                  ).animate(delay: 150.ms).fadeIn(duration: 300.ms, curve: Curves.easeOut)
+                else
+                  Row(
+                    children: [
+                      _Pill(text: 'Training Day $trainingDayCount', color: const Color(0xFFCCFF00)),
+                      const SizedBox(width: SpacingScale.s8),
+                      _Pill(text: '${level.icon} ${level.title}', color: AppColors.emerald),
+                      const SizedBox(width: SpacingScale.s8),
+                      _Pill(text: 'Rank #${player.rank}', color: const Color(0xFF00E5FF)),
+                    ],
+                  ).animate(delay: 150.ms).fadeIn(duration: 300.ms, curve: Curves.easeOut),
+                const SizedBox(height: SpacingScale.s20),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('${player.points} XP', style: AppTextStyles.title2.copyWith(
+                          color: isDark ? Colors.white : AppColors.lightTextPrimary,
+                          fontWeight: FontWeight.w800,
+                        )),
+                        Text('Level ${level.title}', style: AppTextStyles.caption.copyWith(
+                          color: isDark ? const Color(0xFFCCFF00) : AppColors.primary,
+                          fontWeight: FontWeight.w700,
+                        )),
+                      ],
+                    ),
+                    const SizedBox(height: SpacingScale.s8),
+                    ClipRRect(
+                      borderRadius: AppRadius.brFull,
+                      child: TweenAnimationBuilder<double>(
+                        tween: Tween(begin: 0, end: xpProgress),
+                        duration: DurationTokens.long,
+                        curve: Curves.easeOutCubic,
+                        builder: (context, value, _) => LinearProgressIndicator(
+                          value: value,
+                          minHeight: 8,
+                          backgroundColor: isDark ? const Color(0xFF1E293B) : AppColors.lightDivider,
+                          valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFCCFF00)),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: SpacingScale.s6),
+                    Text('$levelProgress / $levelThreshold XP to next level', style: AppTextStyles.captionXs.copyWith(
+                      color: isDark ? AppColors.textTertiary : AppColors.lightTextTertiary,
+                    )),
+                  ],
+                ).animate(delay: 200.ms).fadeIn(duration: 350.ms, curve: Curves.easeOut).slideY(begin: 0.06, end: 0),
           if (isDesktop) ...[
             const SizedBox(height: SpacingScale.s20),
             Row(
@@ -287,7 +334,10 @@ class _HeroContent extends StatelessWidget {
           ],
         ],
       ),
-    );
+    ),
+  ],
+),
+);
   }
 }
 
@@ -299,15 +349,24 @@ class _Pill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final displayColor = (color == const Color(0xFFCCFF00) && !isDark)
+        ? AppColors.voltDark
+        : color;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: SpacingScale.s10, vertical: SpacingScale.s4),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
+        color: displayColor.withValues(alpha: isDark ? 0.12 : 0.08),
         borderRadius: AppRadius.brFull,
+        border: Border.all(
+          color: displayColor.withValues(alpha: isDark ? 0.35 : 0.25),
+          width: 0.75,
+        ),
       ),
       child: Text(
         text,
-        style: AppTextStyles.captionXs.copyWith(color: color, fontWeight: FontWeight.w600),
+        style: AppTextStyles.captionXs.copyWith(color: displayColor, fontWeight: FontWeight.w700),
       ),
     );
   }
@@ -424,24 +483,30 @@ class _StartTrainingButtonState extends State<_StartTrainingButton> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return MouseRegion(
       onEnter: (_) => setState(() => _hovered = true),
       onExit: (_) => setState(() => _hovered = false),
       child: GestureDetector(
-        onTap: () {},
+        onTap: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Training session started! Track your progress in the Performance tab.'),
+              backgroundColor: AppColors.emerald,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        },
         child: AnimatedContainer(
           duration: DurationTokens.fast,
           padding: const EdgeInsets.symmetric(horizontal: SpacingScale.s24, vertical: SpacingScale.s12),
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: _hovered
-                  ? [AppColors.primaryHover, AppColors.primary]
-                  : [AppColors.primary, AppColors.primaryLight],
-            ),
+            color: isDark ? AppColors.heroDarkCta : AppColors.heroLightCta,
             borderRadius: AppRadius.brXl2,
             boxShadow: [
               BoxShadow(
-                color: AppColors.primary.withValues(alpha: _hovered ? 0.4 : 0.2),
+                color: (isDark ? AppColors.volt : const Color(0xFF0F172A))
+                    .withValues(alpha: _hovered ? 0.35 : 0.18),
                 blurRadius: _hovered ? 20 : 12,
                 offset: const Offset(0, 4),
               ),
@@ -450,11 +515,18 @@ class _StartTrainingButtonState extends State<_StartTrainingButton> {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.play_arrow_rounded, size: 20, color: Colors.white),
+              Icon(
+                Icons.play_arrow_rounded,
+                size: 20,
+                color: isDark ? AppColors.heroDarkCtaText : AppColors.heroLightCtaText,
+              ),
               const SizedBox(width: SpacingScale.s8),
               Text(
                 'Start Training',
-                style: AppTextStyles.buttonLg.copyWith(color: Colors.white),
+                style: AppTextStyles.buttonLg.copyWith(
+                  color: isDark ? AppColors.heroDarkCtaText : AppColors.heroLightCtaText,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ],
           ),

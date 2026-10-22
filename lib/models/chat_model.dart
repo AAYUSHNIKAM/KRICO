@@ -1,10 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-
-DateTime? _parseTimestamp(dynamic value) {
-  if (value is Timestamp) return value.toDate();
-  if (value is String) return DateTime.tryParse(value);
-  return null;
-}
+import '../core/utils/date_parser.dart';
 
 class ChatModel {
   const ChatModel({
@@ -35,13 +30,13 @@ class ChatModel {
       chatId: doc.id,
       participants: (data['participants'] as List<dynamic>?)?.cast<String>() ?? [],
       lastMessage: data['lastMessage'] as String?,
-      lastMessageTime: _parseTimestamp(data['lastMessageTime']),
+      lastMessageTime: parseTimestamp(data['lastMessageTime']),
       lastMessageSender: data['lastMessageSender'] as String?,
       unreadCount: (data['unreadCount'] as Map<String, dynamic>?)
           ?.map((k, v) => MapEntry(k, (v as num).toInt())),
       isActive: data['isActive'] as bool? ?? true,
-      createdAt: _parseTimestamp(data['createdAt']),
-      updatedAt: _parseTimestamp(data['updatedAt']),
+      createdAt: parseTimestamp(data['createdAt']),
+      updatedAt: parseTimestamp(data['updatedAt']),
     );
   }
 
@@ -66,6 +61,7 @@ class ChatMessage {
     required this.text,
     this.messageType = MessageType.text,
     this.mediaUrl,
+    this.imageBase64,
     this.isRead = false,
     this.isDelivered = false,
     this.createdAt,
@@ -77,6 +73,7 @@ class ChatMessage {
   final String text;
   final MessageType messageType;
   final String? mediaUrl;
+  final String? imageBase64;
   final bool isRead;
   final bool isDelivered;
   final DateTime? createdAt;
@@ -90,9 +87,10 @@ class ChatMessage {
       text: data['text'] as String? ?? '',
       messageType: _parseMessageType(data['type'] as String?),
       mediaUrl: data['mediaUrl'] as String?,
+      imageBase64: data['imageBase64'] as String?,
       isRead: data['isRead'] as bool? ?? false,
       isDelivered: data['isDelivered'] as bool? ?? false,
-      createdAt: _parseTimestamp(data['createdAt']),
+      createdAt: parseTimestamp(data['createdAt']),
     );
   }
 
@@ -102,6 +100,7 @@ class ChatMessage {
     'text': text,
     'type': messageType.name,
     'mediaUrl': mediaUrl,
+    'imageBase64': imageBase64,
     'isRead': isRead,
     'isDelivered': isDelivered,
     'createdAt': createdAt != null

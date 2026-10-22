@@ -46,7 +46,7 @@ class CommunitySection extends ConsumerWidget {
               return _CommunityContent(users: users);
             },
             loading: () => const DashboardSectionShimmer(height: 260),
-            error: (_, __) => const SizedBox.shrink(),
+            error: (_, _) => const SizedBox.shrink(),
           ),
         ],
       ),

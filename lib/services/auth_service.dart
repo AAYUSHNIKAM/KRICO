@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import '../models/gamification_model.dart';
 import '../models/user_model.dart';
 
 class AuthService {
@@ -37,6 +38,11 @@ class AuthService {
     required String password,
     required UserRole role,
     String? city,
+    List<String>? sports,
+    String? specialization,
+    int? experience,
+    double? hourlyRate,
+    String? bio,
   }) async {
     final credential = await _auth.createUserWithEmailAndPassword(
       email: email,
@@ -55,7 +61,14 @@ class AuthService {
       updatedAt: DateTime.now(),
     );
 
-    await _firestore.collection('users').doc(uid).set(user.toMap());
+    await _firestore.collection('users').doc(uid).set({
+      ...user.toMap(),
+      if (sports != null && sports.isNotEmpty) 'sports': sports,
+      if (specialization != null) 'specialization': specialization,
+      if (experience != null) 'experience': experience,
+      if (hourlyRate != null) 'hourlyRate': hourlyRate,
+      if (bio != null) 'bio': bio,
+    });
 
     if (role == UserRole.coach) {
       await _firestore.collection('coaches').doc(uid).set({
@@ -64,13 +77,16 @@ class AuthService {
         'email': email,
         'phone': phone,
         'city': city,
+        'sports': sports ?? [],
+        'specialization': specialization ?? (sports != null && sports.isNotEmpty ? sports.first : 'General Coaching'),
+        'experience': experience ?? 0,
+        'hourlyRate': hourlyRate ?? 500.0,
+        'bio': bio ?? '',
         'isSubscribed': false,
         'subscriptionTier': 'Starter',
-        'rating': 0.0,
+        'rating': 5.0,
         'totalReviews': 0,
-        'isVerified': false,
-        'experience': 0,
-        'hourlyRate': 0,
+        'isVerified': true,
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
       });
@@ -95,13 +111,13 @@ class AuthService {
     if (role == UserRole.player) {
       await _firestore.collection('players').doc(uid).set({
         'playerId': uid,
-        'parentId': uid,
+        'parentId': '',
         'name': name,
         'points': 0,
         'rank': 0,
         'championshipWins': 0,
         'tournamentPoints': 0,
-        'level': 'Beginner',
+        'level': LevelModel.getLevel(0).title,
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
       });
@@ -126,6 +142,12 @@ class AuthService {
     await _firestore.collection('users').doc(uid).update(data);
   }
 
+  Future<void> setUserRole(String uid, UserRole role) =>
+      updateProfile(uid, {'role': role.name});
+
+  Future<void> toggleUserActive(String uid, bool isActive) =>
+      updateProfile(uid, {'isActive': isActive});
+
   Future<String?> uploadProfilePhoto(String uid, String filePath) async {
     try {
       final ref = _storage.ref('profile_photos/$uid');
@@ -148,6 +170,43 @@ class AuthService {
     final cred = EmailAuthProvider.credential(email: user.email!, password: currentPassword);
     await user.reauthenticateWithCredential(cred);
     await user.updatePassword(newPassword);
+  }
+
+  /// Sends an email verification link to the current user.
+  Future<void> sendEmailVerification() async {
+    final user = _auth.currentUser;
+    if (user == null) throw Exception('User not logged in');
+    await user.sendEmailVerification();
+  }
+
+  /// Refreshes the current user so `emailVerified` reflects the latest state.
+  Future<void> reloadCurrentUser() async {
+    final user = _auth.currentUser;
+    if (user != null) await user.reload();
+  }
+
+  /// Permanently deletes the account after re-authenticating with the current
+  /// password. Removes the auth user plus the users / players / coaches /
+  /// academies documents and the profile photo.
+  Future<void> deleteAccount(String currentPassword) async {
+    final user = _auth.currentUser;
+    if (user == null || user.email == null) throw Exception('User not logged in');
+    final cred = EmailAuthProvider.credential(email: user.email!, password: currentPassword);
+    await user.reauthenticateWithCredential(cred);
+
+    final uid = user.uid;
+    await Future.wait([
+      _firestore.collection('users').doc(uid).delete(),
+      _firestore.collection('players').doc(uid).delete(),
+      _firestore.collection('coaches').doc(uid).delete(),
+      _firestore.collection('academies').doc(uid).delete(),
+    ]);
+    try {
+      await _storage.ref('profile_photos/$uid').delete();
+    } catch (_) {
+      // Ignore missing photo.
+    }
+    await user.delete();
   }
 
   // --- Coupon Management ---

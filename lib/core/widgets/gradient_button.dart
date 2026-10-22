@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../theme/app_colors.dart';
+import '../../design_system/colors/app_colors.dart';
 
 class GradientButton extends StatelessWidget {
   const GradientButton({
@@ -25,6 +25,8 @@ class GradientButton extends StatelessWidget {
   final Color loadingColor;
   final double elevation;
 
+  static const _defaultGradient = [AppColors.primaryHover, AppColors.primary];
+
   @override
   Widget build(BuildContext context) {
     final isDisabled = onPressed == null || isLoading;
@@ -41,16 +43,13 @@ class GradientButton extends StatelessWidget {
                 ],
               )
             : LinearGradient(
-                colors: gradient ??
-                    (Theme.of(context).brightness == Brightness.dark
-                        ? AppColors.gradientPrimary
-                        : AppColors.gradientPrimary),
+                colors: gradient ?? _defaultGradient,
               ),
         boxShadow: isDisabled
             ? []
             : [
                 BoxShadow(
-                  color: (gradient ?? AppColors.gradientPrimary).first
+                  color: (gradient ?? _defaultGradient).first
                       .withValues(alpha: 0.3),
                   blurRadius: 8,
                   offset: const Offset(0, 4),
@@ -85,7 +84,7 @@ class GradientOutlinedButton extends StatelessWidget {
     super.key,
     required this.onPressed,
     required this.child,
-    this.gradient = AppColors.gradientPrimary,
+    this.gradient = const [AppColors.primaryHover, AppColors.primary],
     this.height = 52,
     this.width,
     this.borderRadius = 12,

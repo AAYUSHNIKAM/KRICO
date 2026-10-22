@@ -105,3 +105,90 @@ class VenueModel {
     'updatedAt': FieldValue.serverTimestamp(),
   };
 }
+
+class VenueTimeSlot {
+  const VenueTimeSlot({required this.startTime, required this.endTime, required this.price});
+
+  final String startTime;
+  final String endTime;
+  final int price;
+
+  String get label => '$startTime - $endTime';
+
+  String get displayLabel => '${_format(startTime)} - ${_format(endTime)}';
+
+  static String _format(String time) {
+    final parts = time.split(':');
+    if (parts.length != 2) return time;
+    final hour = int.tryParse(parts[0]) ?? 0;
+    final minute = parts[1];
+    final period = hour >= 12 ? 'PM' : 'AM';
+    final h = hour == 0 ? 12 : (hour > 12 ? hour - 12 : hour);
+    return '${h.toString().padLeft(2, '0')}:$minute $period';
+  }
+
+  static const List<VenueTimeSlot> slots = [
+    VenueTimeSlot(startTime: '06:00', endTime: '07:00', price: 500),
+    VenueTimeSlot(startTime: '07:00', endTime: '08:00', price: 500),
+    VenueTimeSlot(startTime: '16:00', endTime: '17:00', price: 600),
+    VenueTimeSlot(startTime: '17:00', endTime: '18:00', price: 600),
+    VenueTimeSlot(startTime: '18:00', endTime: '19:00', price: 700),
+    VenueTimeSlot(startTime: '19:00', endTime: '20:00', price: 700),
+  ];
+}
+
+class VenueBookingModel {
+  const VenueBookingModel({
+    required this.bookingId,
+    required this.venueId,
+    required this.venueName,
+    required this.userId,
+    required this.userName,
+    required this.date,
+    required this.startTime,
+    required this.amount,
+    required this.status,
+    this.createdAt,
+  });
+
+  final String bookingId;
+  final String venueId;
+  final String venueName;
+  final String userId;
+  final String userName;
+  final DateTime date;
+  final String startTime;
+  final double amount;
+  final String status;
+  final DateTime? createdAt;
+
+  String get dateKey => '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+
+  factory VenueBookingModel.fromDoc(DocumentSnapshot<Map<String, dynamic>> doc) {
+    final data = doc.data()!;
+    return VenueBookingModel(
+      bookingId: doc.id,
+      venueId: data['venueId'] as String? ?? '',
+      venueName: data['venueName'] as String? ?? '',
+      userId: data['userId'] as String? ?? '',
+      userName: data['userName'] as String? ?? '',
+      date: (data['date'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      startTime: data['startTime'] as String? ?? '',
+      amount: (data['amount'] as num?)?.toDouble() ?? 0,
+      status: data['status'] as String? ?? 'booked',
+      createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
+    );
+  }
+
+  Map<String, dynamic> toMap() => {
+    'venueId': venueId,
+    'venueName': venueName,
+    'userId': userId,
+    'userName': userName,
+    'date': Timestamp.fromDate(DateTime(date.year, date.month, date.day)),
+    'startTime': startTime,
+    'amount': amount,
+    'status': status,
+    'createdAt': createdAt != null ? Timestamp.fromDate(createdAt!) : FieldValue.serverTimestamp(),
+  };
+}

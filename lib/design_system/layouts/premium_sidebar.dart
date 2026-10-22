@@ -311,8 +311,11 @@ class PremiumCollapsedSidebar extends StatelessWidget {
       child: Column(
         children: [
           const SizedBox(height: SpacingScale.s16),
-          ...children,
-          const Spacer(),
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(children: children),
+            ),
+          ),
           if (footer != null)
             Padding(
               padding: const EdgeInsets.only(bottom: SpacingScale.s12),

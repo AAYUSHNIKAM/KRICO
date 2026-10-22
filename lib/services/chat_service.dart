@@ -55,8 +55,9 @@ class ChatService {
         .collection('messages')
         .doc(message.messageId)
         .set(message.toMap());
+    final preview = type == MessageType.image ? '[Image]' : text;
     await _firestore.collection('chats').doc(chatId).update({
-      'lastMessage': text,
+      'lastMessage': preview,
       'lastMessageTime': FieldValue.serverTimestamp(),
       'lastMessageSender': senderId,
     });
@@ -77,5 +78,35 @@ class ChatService {
     await _firestore.collection('chats').doc(chatId).update({
       'unreadCount.$userId': 0,
     });
+  }
+
+  Future<String> getOrCreateDirectChat(
+    String user1,
+    String user2, {
+    String? starterMessage,
+    String? starterSenderId,
+  }) async {
+    final snap = await _firestore
+        .collection('chats')
+        .where('participants', arrayContains: user1)
+        .where('isActive', isEqualTo: true)
+        .get();
+
+    for (final doc in snap.docs) {
+      final participants = (doc.data()['participants'] as List<dynamic>?)?.cast<String>() ?? [];
+      if (participants.contains(user2)) {
+        return doc.id;
+      }
+    }
+
+    final chatId = await createChat([user1, user2]);
+    if (starterMessage != null && starterSenderId != null) {
+      await sendMessage(
+        chatId: chatId,
+        senderId: starterSenderId,
+        text: starterMessage,
+      );
+    }
+    return chatId;
   }
 }

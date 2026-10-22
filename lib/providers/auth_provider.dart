@@ -14,5 +14,3 @@ final userProfileProvider = FutureProvider.family<UserModel?, String>((ref, uid)
   final authService = ref.watch(authServiceProvider);
   return authService.getUserProfile(uid);
 });
-
-final authLoadingProvider = Provider<bool>((ref) => false);

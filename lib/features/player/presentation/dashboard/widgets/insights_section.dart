@@ -35,11 +35,11 @@ class InsightsSection extends ConsumerWidget {
                   return _InsightsContent(playerPoints: player.points, sessions: sessions);
                 },
                 loading: () => const _InsightsFallback(),
-                error: (_, __) => const _InsightsFallback(),
+                error: (_, _) => const _InsightsFallback(),
               );
             },
             loading: () => const _InsightsFallback(),
-            error: (_, __) => const _InsightsFallback(),
+            error: (_, _) => const _InsightsFallback(),
           ),
         ],
       ),

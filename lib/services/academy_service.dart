@@ -59,6 +59,110 @@ class AcademyService {
         .snapshots();
   }
 
+  Stream<QuerySnapshot<Map<String, dynamic>>> getBatchStudents(String batchId) {
+    if (batchId.trim().isEmpty) {
+      return const Stream.empty();
+    }
+    return _firestore
+        .collection('batches')
+        .doc(batchId)
+        .collection('students')
+        .orderBy('enrolledAt', descending: true)
+        .snapshots();
+  }
+
+  Future<void> enrollStudentInBatch({
+    required String batchId,
+    required String academyId,
+    required String studentName,
+    String? studentPhone,
+    String? studentEmail,
+    String? emergencyContact,
+    String? paymentMode,
+    String? admissionType,
+    double? feePaid,
+    int? proRatedDays,
+  }) async {
+    final batch = _firestore.batch();
+    final studentRef = _firestore
+        .collection('batches')
+        .doc(batchId)
+        .collection('students')
+        .doc();
+
+    batch.set(studentRef, {
+      'studentId': studentRef.id,
+      'batchId': batchId,
+      'academyId': academyId,
+      'name': studentName,
+      'phone': studentPhone ?? '',
+      'email': studentEmail ?? '',
+      'emergencyContact': emergencyContact ?? '',
+      'paymentMode': paymentMode ?? 'online_app',
+      'admissionType': admissionType ?? 'full_month',
+      'feePaid': feePaid ?? 0.0,
+      'proRatedDays': proRatedDays,
+      'isReconciled': paymentMode == 'cash_at_desk',
+      'status': 'active',
+      'enrolledAt': FieldValue.serverTimestamp(),
+    });
+
+    batch.update(_firestore.collection('batches').doc(batchId), {
+      'enrolled': FieldValue.increment(1),
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+
+    await batch.commit();
+  }
+
+  Future<void> removeStudentFromBatch({
+    required String batchId,
+    required String studentId,
+  }) async {
+    final batch = _firestore.batch();
+    final studentRef = _firestore
+        .collection('batches')
+        .doc(batchId)
+        .collection('students')
+        .doc(studentId);
+
+    batch.delete(studentRef);
+    batch.update(_firestore.collection('batches').doc(batchId), {
+      'enrolled': FieldValue.increment(-1),
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+
+    await batch.commit();
+  }
+
+  Future<void> saveBatchAttendance({
+    required String batchId,
+    required String dateKey,
+    required Map<String, bool> attendance,
+  }) async {
+    await _firestore
+        .collection('batches')
+        .doc(batchId)
+        .collection('attendance')
+        .doc(dateKey)
+        .set({
+      'date': dateKey,
+      'records': attendance,
+      'totalPresent': attendance.values.where((v) => v).length,
+      'totalStudents': attendance.length,
+      'recordedAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
+  }
+
+  Stream<DocumentSnapshot<Map<String, dynamic>>> getBatchAttendance(String batchId, String dateKey) {
+    return _firestore
+        .collection('batches')
+        .doc(batchId)
+        .collection('attendance')
+        .doc(dateKey)
+        .snapshots();
+  }
+
   Stream<QuerySnapshot<Map<String, dynamic>>> getPlacements(String academyId) {
     return _firestore
         .collection('academyPlacements')
@@ -165,13 +269,6 @@ class AcademyService {
     });
   }
 
-  Future<void> assignStudentToBatch(String batchId, String studentId) async {
-    await _firestore.collection('batches').doc(batchId).update({
-      'enrolled': FieldValue.increment(1),
-      'updatedAt': FieldValue.serverTimestamp(),
-    });
-  }
-
   Future<void> postJob({
     required String academyId,
     required String title,
@@ -226,5 +323,88 @@ class AcademyService {
         .collection('jobApplications')
         .where('jobId', isEqualTo: jobId)
         .snapshots();
+  }
+
+  Future<void> updateApplicationStatus(String applicationId, String status) async {
+    await _firestore.collection('jobApplications').doc(applicationId).update({
+      'status': status,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  Future<void> acceptApplicationAndAssignCoach(String applicationId, String academyId) async {
+    final appDoc = await _firestore.collection('jobApplications').doc(applicationId).get();
+    final data = appDoc.data();
+    if (data == null) return;
+    final coachId = data['coachId'] as String?;
+    if (coachId == null) return;
+
+    final batch = _firestore.batch();
+
+    batch.update(appDoc.reference, {
+      'status': 'accepted',
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+
+    batch.update(_firestore.collection('coaches').doc(coachId), {
+      'academyId': academyId,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+
+    final placementRef = _firestore.collection('academyPlacements').doc();
+    batch.set(placementRef, {
+      'academyId': academyId,
+      'coachId': coachId,
+      'placedAt': FieldValue.serverTimestamp(),
+    });
+
+    batch.update(_firestore.collection('academies').doc(academyId), {
+      'coachPlacements': FieldValue.increment(1),
+      'reputationPoints': FieldValue.increment(10),
+    });
+
+    await batch.commit();
+  }
+
+  Future<void> acceptInvitation(String invitationId, String coachId, String academyId) async {
+    final batch = _firestore.batch();
+
+    batch.update(_firestore.collection('coachInvitations').doc(invitationId), {
+      'status': 'accepted',
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+
+    batch.update(_firestore.collection('coaches').doc(coachId), {
+      'academyId': academyId,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+
+    final placementRef = _firestore.collection('academyPlacements').doc();
+    batch.set(placementRef, {
+      'academyId': academyId,
+      'coachId': coachId,
+      'placedAt': FieldValue.serverTimestamp(),
+    });
+
+    batch.update(_firestore.collection('academies').doc(academyId), {
+      'coachPlacements': FieldValue.increment(1),
+      'reputationPoints': FieldValue.increment(10),
+    });
+
+    await batch.commit();
+  }
+
+  Future<void> declineInvitation(String invitationId) async {
+    await _firestore.collection('coachInvitations').doc(invitationId).update({
+      'status': 'declined',
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  Future<void> deleteJob(String jobId) async {
+    await _firestore.collection('coachJobs').doc(jobId).update({
+      'status': 'closed',
+      'deletedAt': FieldValue.serverTimestamp(),
+    });
   }
 }

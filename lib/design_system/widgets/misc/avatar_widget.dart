@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../colors/app_colors.dart';
-import '../../typography/text_styles.dart';
-import '../../radius/radius.dart';
-import '../../spacing/spacing_scale.dart';
 
 enum AvatarSize { xs, sm, md, lg, xl }
 
@@ -62,7 +59,7 @@ class AppAvatar extends StatelessWidget {
           child: Image.network(
             imageUrl!,
             fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) => _buildInitials(isDark),
+            errorBuilder: (context, error, stackTrace) => _buildInitials(isDark),
             loadingBuilder: (_, child, progress) {
               if (progress == null) return child;
               return Container(

@@ -1,4 +1,6 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../colors/app_colors.dart';
 import '../typography/text_styles.dart';
 import '../spacing/spacing_scale.dart';
@@ -34,111 +36,159 @@ class AppBottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = isDark ? AppColors.surface : AppColors.lightSurface;
-    final borderColor = isDark ? AppColors.border : AppColors.lightBorder;
-    final accentColor = color ?? AppColors.primary;
+    final accentColor = color ?? (isDark ? const Color(0xFFCCFF00) : AppColors.primary);
+    final dockBg = isDark
+        ? const Color(0xE610141D)
+        : const Color(0xF2FFFFFF);
+    final borderColor = isDark
+        ? Colors.white.withValues(alpha: 0.10)
+        : Colors.black.withValues(alpha: 0.08);
 
-    return Container(
-      decoration: BoxDecoration(
-        color: bgColor,
-        border: Border(
-          top: BorderSide(color: borderColor, width: 0.5),
-        ),
-      ),
-      child: SafeArea(
-        top: false,
-        child: SizedBox(
-          height: 60,
-          child: Row(
-            children: List.generate(items.length, (index) {
-              final item = items[index];
-              final isSelected = index == selectedIndex;
-              return Expanded(
-                child: GestureDetector(
-                  onTap: isSelected ? null : () => onChanged?.call(index),
-                  behavior: HitTestBehavior.opaque,
-                  child: Container(
-                    height: 60,
-                    padding: const EdgeInsets.only(top: SpacingScale.s6),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            AnimatedContainer(
-                              duration: const Duration(milliseconds: 200),
-                              width: isSelected ? 40 : 0,
-                              height: 3,
-                              decoration: BoxDecoration(
-                                color: accentColor,
-                                borderRadius: BorderRadius.circular(1.5),
-                              ),
-                              margin: const EdgeInsets.only(bottom: 8),
-                            ),
-                            if (isSelected)
-                              const SizedBox(height: 0)
-                            else
-                              const SizedBox(height: 0),
-                          ],
-                        ),
-                        Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            Icon(
-                              isSelected
-                                  ? (item.selectedIcon ?? item.icon)
-                                  : item.icon,
-                              size: 24,
-                              color: isSelected
-                                  ? accentColor
-                                  : (isDark
-                                      ? AppColors.textTertiary
-                                      : AppColors.lightTextTertiary),
-                            ),
-                            if (item.badge != null)
-                              Positioned(
-                                right: -8,
-                                top: -4,
-                                child: Container(
-                                  width: 16,
-                                  height: 16,
-                                  decoration: const BoxDecoration(
-                                    color: AppColors.danger,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      item.badge!,
-                                      style: const TextStyle(
-                                        fontSize: 9,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.white,
-                                      ),
+    return SafeArea(
+      top: false,
+      bottom: true,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(14, 4, 14, 8),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(28),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+            child: Container(
+              height: 64,
+              decoration: BoxDecoration(
+                color: dockBg,
+                borderRadius: BorderRadius.circular(28),
+                border: Border.all(color: borderColor, width: 1),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: isDark ? 0.45 : 0.08),
+                    blurRadius: 24,
+                    offset: const Offset(0, 8),
+                  ),
+                  if (isDark)
+                    BoxShadow(
+                      color: accentColor.withValues(alpha: 0.08),
+                      blurRadius: 18,
+                      offset: const Offset(0, 0),
+                    ),
+                ],
+              ),
+              child: Row(
+                children: List.generate(items.length, (index) {
+                  final item = items[index];
+                  final isSelected = index == selectedIndex;
+                  return Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        if (!isSelected) {
+                          HapticFeedback.selectionClick();
+                          onChanged?.call(index);
+                        }
+                      },
+                      behavior: HitTestBehavior.opaque,
+                      child: Center(
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 240),
+                          curve: Curves.easeOutCubic,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: isSelected ? 12 : 8,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? accentColor.withValues(alpha: isDark ? 0.16 : 0.12)
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(20),
+                            border: isSelected
+                                ? Border.all(
+                                    color: accentColor.withValues(alpha: 0.25),
+                                    width: 1,
+                                  )
+                                : null,
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Stack(
+                                clipBehavior: Clip.none,
+                                alignment: Alignment.center,
+                                children: [
+                                  AnimatedScale(
+                                    scale: isSelected ? 1.08 : 1.0,
+                                    duration: const Duration(milliseconds: 200),
+                                    child: Icon(
+                                      isSelected
+                                          ? (item.selectedIcon ?? item.icon)
+                                          : item.icon,
+                                      size: 22,
+                                      color: isSelected
+                                          ? accentColor
+                                          : (isDark
+                                              ? AppColors.textTertiary
+                                              : AppColors.lightTextTertiary),
                                     ),
                                   ),
+                                  if (item.badge != null)
+                                    Positioned(
+                                      right: -10,
+                                      top: -6,
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 5,
+                                          vertical: 1.5,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFFF3366),
+                                          borderRadius: BorderRadius.circular(10),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: const Color(0xFFFF3366).withValues(alpha: 0.5),
+                                              blurRadius: 6,
+                                              offset: const Offset(0, 2),
+                                            ),
+                                          ],
+                                        ),
+                                        child: Text(
+                                          item.badge!,
+                                          style: const TextStyle(
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.w800,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                              const SizedBox(height: SpacingScale.s4),
+                              AnimatedDefaultTextStyle(
+                                duration: const Duration(milliseconds: 200),
+                                style: AppTextStyles.captionXs.copyWith(
+                                  color: isSelected
+                                      ? (isDark ? Colors.white : AppColors.lightTextPrimary)
+                                      : (isDark
+                                          ? AppColors.textTertiary
+                                          : AppColors.lightTextTertiary),
+                                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                                  fontSize: 10,
+                                  letterSpacing: isSelected ? 0.2 : 0,
+                                ),
+                                child: Text(
+                                  item.label,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
-                          ],
-                        ),
-                        const SizedBox(height: SpacingScale.s4),
-                        Text(
-                          item.label,
-                          style: AppTextStyles.captionXs.copyWith(
-                            color: isSelected
-                                ? accentColor
-                                : (isDark
-                                    ? AppColors.textTertiary
-                                    : AppColors.lightTextTertiary),
-                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                            ],
                           ),
                         ),
-                      ],
+                      ),
                     ),
-                  ),
-                ),
-              );
-            }),
+                  );
+                }),
+              ),
+            ),
           ),
         ),
       ),

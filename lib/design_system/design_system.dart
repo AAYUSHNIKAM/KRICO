@@ -1,4 +1,4 @@
-// SportsEco Design System
+// KRICO Design System (Krida + Coach)
 // A premium, minimal, enterprise-grade design system.
 //
 // Usage:

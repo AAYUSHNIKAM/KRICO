@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../colors/app_colors.dart';
 import '../../radius/radius.dart';
-import '../../spacing/spacing_scale.dart';
 
 class AppFloatingActionButton extends StatelessWidget {
   const AppFloatingActionButton({
@@ -19,7 +18,6 @@ class AppFloatingActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = color ?? AppColors.primary;
     final fgColor = AppColors.textInverse;
 

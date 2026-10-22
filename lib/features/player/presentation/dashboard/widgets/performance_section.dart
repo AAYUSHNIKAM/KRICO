@@ -36,7 +36,7 @@ class PerformanceSection extends ConsumerWidget {
               return _PerformanceContent(metrics: metrics);
             },
             loading: () => const DashboardSectionShimmer(height: 320),
-            error: (_, __) => DashboardEmptyState(
+            error: (_, _) => DashboardEmptyState(
               icon: Icons.show_chart_rounded,
               title: 'Performance Data Unavailable',
               subtitle: 'Start training to see your performance trends.',

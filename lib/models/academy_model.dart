@@ -1,10 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-
-DateTime? _parseTimestamp(dynamic value) {
-  if (value is Timestamp) return value.toDate();
-  if (value is String) return DateTime.tryParse(value);
-  return null;
-}
+import '../core/utils/date_parser.dart';
 
 class AcademyModel {
   const AcademyModel({
@@ -64,8 +59,8 @@ class AcademyModel {
       coachPlacements: (data['coachPlacements'] as num?)?.toInt() ?? 0,
       totalStudents: (data['totalStudents'] as num?)?.toInt() ?? 0,
       isVerified: data['isVerified'] as bool? ?? false,
-      createdAt: _parseTimestamp(data['createdAt']),
-      updatedAt: _parseTimestamp(data['updatedAt']),
+      createdAt: parseTimestamp(data['createdAt']),
+      updatedAt: parseTimestamp(data['updatedAt']),
     );
   }
 

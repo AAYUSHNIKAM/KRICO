@@ -29,7 +29,7 @@ class TodaysFocusSection extends ConsumerWidget {
         return _TodaysFocusContent(sport: sport, dayOfYear: _dayOfYear());
       },
       loading: () => const SizedBox.shrink(),
-      error: (_, __) => const SizedBox.shrink(),
+      error: (_, _) => const SizedBox.shrink(),
     );
   }
 }
@@ -121,7 +121,16 @@ class _TodaysFocusContent extends StatelessWidget {
               color: Colors.transparent,
               child: InkWell(
                 borderRadius: AppRadius.brXl3,
-                onTap: () {},
+                onTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Focus: ${focus.title} — ${focus.tips}'),
+                      backgroundColor: AppColors.primary,
+                      behavior: SnackBarBehavior.floating,
+                      duration: const Duration(seconds: 3),
+                    ),
+                  );
+                },
                 child: Padding(
                   padding: const EdgeInsets.all(SpacingScale.s24),
                   child: Row(

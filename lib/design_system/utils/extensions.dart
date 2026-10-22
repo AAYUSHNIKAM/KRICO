@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../colors/app_colors.dart';
-import '../spacing/spacing_scale.dart';
+import '../colors/app_color_scheme.dart';
 import '../tokens/spacing_tokens.dart';
 
 extension ContextExtensions on BuildContext {
@@ -10,6 +10,10 @@ extension ContextExtensions on BuildContext {
   double get height => mediaQuery.size.height;
   bool get isDark => theme.brightness == Brightness.dark;
 
+  AppColorScheme get appColors =>
+      theme.extension<AppColorScheme>() ?? (isDark ? AppColorScheme.dark : AppColorScheme.light);
+  AppColorScheme get colorScheme => appColors;
+
   Color get primaryColor => AppColors.primary;
   Color get surfaceColor => isDark ? AppColors.surface : AppColors.lightSurface;
   Color get cardColor => isDark ? AppColors.card : AppColors.lightCard;
@@ -18,6 +22,11 @@ extension ContextExtensions on BuildContext {
   Color get textTertiaryColor => isDark ? AppColors.textTertiary : AppColors.lightTextTertiary;
   Color get borderColor => isDark ? AppColors.border : AppColors.lightBorder;
   Color get dividerColor => isDark ? AppColors.divider : AppColors.lightDivider;
+  Color get voltColor => isDark ? AppColors.volt : AppColors.voltDark;
+  Color get cyanColor => isDark ? AppColors.cyan : AppColors.cyanDark;
+  Color get heroCtaBg => isDark ? AppColors.heroDarkCta : AppColors.heroLightCta;
+  Color get heroCtaFg => isDark ? AppColors.heroDarkCtaText : AppColors.heroLightCtaText;
+  Color get subtleBorder => isDark ? const Color(0x14FFFFFF) : AppColors.lightBorder;
 }
 
 extension WidgetPadding on Widget {

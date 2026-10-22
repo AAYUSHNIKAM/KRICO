@@ -34,7 +34,7 @@ class DashboardPage extends ConsumerWidget {
           playerName: player.name,
         ),
         loading: () => const _LoadingLayout(),
-        error: (_, __) => _ErrorLayout(
+        error: (_, _) => _ErrorLayout(
           onRetry: () => ref.invalidate(playerProvider(playerId)),
         ),
       ),

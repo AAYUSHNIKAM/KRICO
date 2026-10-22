@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import '../theme/app_colors.dart';
-import '../theme/app_text_styles.dart';
+import '../../design_system/colors/app_colors.dart';
+import '../../design_system/typography/text_styles.dart';
+import '../../design_system/radius/radius.dart';
+import '../../design_system/spacing/spacing_scale.dart';
 
 class StatsCard extends StatelessWidget {
   const StatsCard({
@@ -30,103 +32,103 @@ class StatsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? AppColors.textPrimary : AppColors.lightTextPrimary;
+    final secColor = isDark ? AppColors.textSecondary : AppColors.lightTextSecondary;
+    final surfaceColor = isDark ? AppColors.surface : AppColors.lightSurface;
+
     return Animate(
       effects: [
         FadeEffect(duration: 500.ms),
         SlideEffect(),
       ],
-      child: Card(
-        margin: EdgeInsets.zero,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: gradient != null
-                ? BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    gradient: LinearGradient(colors: gradient!),
-                  )
-                : null,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      child: Container(
+        padding: const EdgeInsets.all(SpacingScale.s16),
+        decoration: gradient != null
+            ? BoxDecoration(
+                borderRadius: AppRadius.brXl2,
+                gradient: LinearGradient(colors: gradient!),
+              )
+            : BoxDecoration(
+                color: surfaceColor,
+                borderRadius: AppRadius.brXl2,
+                border: Border.all(
+                  color: isDark ? AppColors.border : AppColors.lightBorder,
+                  width: 0.5,
+                ),
+              ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               children: [
-                Row(
-                  children: [
-                    if (icon != null) ...[
-                      Icon(
-                        icon,
-                        size: 18,
-                        color: gradient != null
-                            ? Colors.white.withValues(alpha: 0.9)
-                            : (iconColor ?? AppColors.primary),
-                      ),
-                      const SizedBox(width: 8),
-                    ],
-                    Expanded(
-                      child: Text(
-                        label,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.caption.copyWith(
-                          color: gradient != null
-                              ? Colors.white.withValues(alpha: 0.8)
-                              : (isDark
-                                  ? AppColors.textSecondary
-                                  : AppColors.textSecondary),
-                        ),
-                      ),
+                if (icon != null) ...[
+                  Icon(
+                    icon,
+                    size: 18,
+                    color: gradient != null
+                        ? Colors.white.withValues(alpha: 0.9)
+                        : (iconColor ?? AppColors.primary),
+                  ),
+                  const SizedBox(width: SpacingScale.s8),
+                ],
+                Expanded(
+                  child: Text(
+                    label,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.captionXs.copyWith(
+                      color: gradient != null
+                          ? Colors.white.withValues(alpha: 0.8)
+                          : secColor,
                     ),
-                    if (trend != null && trendValue != null) ...[
-                      const SizedBox(width: 4),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
+                  ),
+                ),
+                if (trend != null && trendValue != null) ...[
+                  const SizedBox(width: SpacingScale.s4),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: SpacingScale.s6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: trend!
+                          ? AppColors.success.withValues(alpha: 0.15)
+                          : AppColors.danger.withValues(alpha: 0.15),
+                      borderRadius: AppRadius.brSm,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          trend! ? Icons.trending_up : Icons.trending_down,
+                          size: 12,
                           color: trend!
-                              ? AppColors.success.withValues(alpha: 0.15)
-                              : AppColors.error.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(4),
+                              ? AppColors.success
+                              : AppColors.danger,
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              trend! ? Icons.trending_up : Icons.trending_down,
-                              size: 12,
-                              color: trend!
-                                  ? AppColors.success
-                                  : AppColors.error,
-                            ),
-                            const SizedBox(width: 2),
-                            Text(
-                              trendValue!,
-                              style: AppTextStyles.caption.copyWith(
-                                fontSize: 10,
-                                color: trend!
-                                    ? AppColors.success
-                                    : AppColors.error,
-                              ),
-                            ),
-                          ],
+                        const SizedBox(width: 2),
+                        Text(
+                          trendValue!,
+                          style: AppTextStyles.captionXs.copyWith(
+                            fontSize: 10,
+                            color: trend!
+                                ? AppColors.success
+                                : AppColors.danger,
+                          ),
                         ),
-                      ),
-                    ],
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  value,
-                  style: (gradient != null
-                          ? AppTextStyles.numberMetric.copyWith(
-                              color: Colors.white,
-                            )
-                          : AppTextStyles.numberMetric.copyWith(
-                              color: valueColor ?? AppColors.textPrimary,
-                            )),
-                ),
+                      ],
+                    ),
+                  ),
+                ],
               ],
             ),
-          ),
+            const SizedBox(height: SpacingScale.s8),
+            Text(
+              value,
+              style: AppTextStyles.numeric.copyWith(
+                color: gradient != null
+                    ? Colors.white
+                    : (valueColor ?? textColor),
+              ),
+            ),
+          ],
         ),
       ),
     );

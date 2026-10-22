@@ -68,7 +68,7 @@ class _AppDropdownState<T> extends State<AppDropdown<T>> {
             onFocusChange: (v) => setState(() => _focused = v),
             child: DropdownButtonHideUnderline(
               child: DropdownButtonFormField<T>(
-                value: widget.value,
+                initialValue: widget.value,
                 items: widget.items,
                 onChanged: widget.disabled ? null : widget.onChanged,
                 hint: widget.hint != null

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'breakpoints.dart';
-import '../spacing/spacing_scale.dart';
 import '../tokens/spacing_tokens.dart';
 
 extension ResponsiveContext on BuildContext {

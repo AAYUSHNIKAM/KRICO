@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../colors/app_colors.dart';
 import '../../typography/text_styles.dart';
-import '../../spacing/spacing_scale.dart';
 import '../../tokens/duration_tokens.dart';
 import 'button_types.dart';
 

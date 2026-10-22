@@ -8,6 +8,7 @@ import '../../../../../design_system/radius/radius.dart';
 import '../../../../../design_system/responsive/responsive_helpers.dart';
 import '../../../../../models/gamification_model.dart';
 import '../../../../../services/providers.dart';
+import 'package:go_router/go_router.dart';
 import 'dashboard_loading.dart';
 
 class AchievementsSection extends ConsumerWidget {
@@ -31,10 +32,10 @@ class AchievementsSection extends ConsumerWidget {
           achievementsAsync.when(
             data: (unlockedList) {
               final unlockedIds = unlockedList.map((e) => e['achievementId'] as String).toSet();
-              return _AchievementsContent(unlockedIds: unlockedIds);
+              return _AchievementsContent(playerId: playerId, unlockedIds: unlockedIds);
             },
             loading: () => const DashboardSectionShimmer(height: 160),
-            error: (_, __) => const SizedBox.shrink(),
+            error: (_, _) => const SizedBox.shrink(),
           ),
         ],
       ),
@@ -43,9 +44,10 @@ class AchievementsSection extends ConsumerWidget {
 }
 
 class _AchievementsContent extends StatelessWidget {
+  final String playerId;
   final Set<String> unlockedIds;
 
-  const _AchievementsContent({required this.unlockedIds});
+  const _AchievementsContent({required this.playerId, required this.unlockedIds});
 
   @override
   Widget build(BuildContext context) {
@@ -79,11 +81,47 @@ class _AchievementsContent extends StatelessWidget {
                   child: const Icon(Icons.emoji_events_rounded, size: 18, color: AppColors.warning),
                 ),
                 const SizedBox(width: SpacingScale.s10),
-                Text('Achievements', style: AppTextStyles.title2.copyWith(
-                  color: textColor,
-                  fontWeight: FontWeight.w600,
-                )),
-                const Spacer(),
+                Expanded(
+                  child: Text('Achievements',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.title2.copyWith(
+                      color: textColor,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                InkWell(
+                  onTap: () => context.push('/player-certificates/$playerId'),
+                  borderRadius: AppRadius.brFull,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.gold.withValues(alpha: 0.12),
+                      borderRadius: AppRadius.brFull,
+                      border: Border.all(color: AppColors.gold.withValues(alpha: 0.3)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.workspace_premium_rounded, size: 12, color: AppColors.gold),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Trophy Room & PDF',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.gold,
+                          ),
+                        ),
+                        const SizedBox(width: 2),
+                        Icon(Icons.arrow_forward_ios_rounded, size: 9, color: AppColors.gold),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: SpacingScale.s8),
                 Text('${unlockedIds.length}/${AchievementModel.achievements.length}', style: AppTextStyles.label.copyWith(
                   color: secColor,
                   fontWeight: FontWeight.w500,
@@ -92,12 +130,12 @@ class _AchievementsContent extends StatelessWidget {
             ),
             const SizedBox(height: SpacingScale.s16),
             SizedBox(
-              height: 100,
+              height: 114,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 padding: EdgeInsets.zero,
                 itemCount: AchievementModel.achievements.length,
-                separatorBuilder: (_, __) => const SizedBox(width: SpacingScale.s12),
+                separatorBuilder: (_, _) => const SizedBox(width: SpacingScale.s12),
                 itemBuilder: (context, i) {
                   final achievement = AchievementModel.achievements[i];
                   final isUnlocked = unlockedIds.contains(achievement.id);

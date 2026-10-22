@@ -43,7 +43,7 @@ class PlayerProgressionSection extends ConsumerWidget {
                   );
                 },
                 loading: () => const DashboardSectionShimmer(height: 200),
-                error: (_, __) => _ProgressionContent(
+                error: (_, _) => _ProgressionContent(
                   playerPoints: player.points,
                   playerRank: player.rank,
                   metrics: const [],
@@ -51,7 +51,7 @@ class PlayerProgressionSection extends ConsumerWidget {
               );
             },
             loading: () => const DashboardSectionShimmer(height: 200),
-            error: (_, __) => const SizedBox.shrink(),
+            error: (_, _) => const SizedBox.shrink(),
           ),
         ],
       ),
@@ -255,6 +255,8 @@ class _MiniStat extends StatelessWidget {
               children: [
                 Text(
                   value,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.label.copyWith(
                     color: isDark ? AppColors.textPrimary : AppColors.lightTextPrimary,
                     fontWeight: FontWeight.w600,
@@ -262,6 +264,8 @@ class _MiniStat extends StatelessWidget {
                 ),
                 Text(
                   label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.captionXs.copyWith(
                     color: isDark ? AppColors.textTertiary : AppColors.lightTextTertiary,
                   ),

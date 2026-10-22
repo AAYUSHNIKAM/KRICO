@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../core/utils/date_parser.dart';
 
 enum UserRole { parent, player, coach, academy, admin }
 
@@ -12,9 +13,17 @@ class UserModel {
     this.photoUrl,
     this.city,
     this.bio,
+    this.handle,
+    this.storedUsername,
+    this.followersCount = 0,
+    this.followingCount = 0,
     this.createdAt,
     this.updatedAt,
     this.isActive = true,
+    this.sports,
+    this.specialization,
+    this.experience,
+    this.hourlyRate,
   });
 
   final String uid;
@@ -25,9 +34,17 @@ class UserModel {
   final String? photoUrl;
   final String? city;
   final String? bio;
+  final String? handle;
+  final String? storedUsername;
+  final int followersCount;
+  final int followingCount;
   final DateTime? createdAt;
   final DateTime? updatedAt;
   final bool isActive;
+  final List<String>? sports;
+  final String? specialization;
+  final int? experience;
+  final double? hourlyRate;
 
   factory UserModel.fromDoc(DocumentSnapshot<Map<String, dynamic>> doc) {
     final data = doc.data()!;
@@ -40,16 +57,18 @@ class UserModel {
       photoUrl: data['photoUrl'] as String?,
       city: data['city'] as String?,
       bio: data['bio'] as String?,
-      createdAt: _parseTimestamp(data['createdAt']),
-      updatedAt: _parseTimestamp(data['updatedAt']),
+      handle: data['handle'] as String?,
+      storedUsername: data['username'] as String?,
+      followersCount: (data['followersCount'] as num?)?.toInt() ?? 0,
+      followingCount: (data['followingCount'] as num?)?.toInt() ?? 0,
+      createdAt: parseTimestamp(data['createdAt']),
+      updatedAt: parseTimestamp(data['updatedAt']),
       isActive: data['isActive'] as bool? ?? true,
+      sports: (data['sports'] as List<dynamic>?)?.map((e) => e.toString()).toList(),
+      specialization: data['specialization'] as String?,
+      experience: (data['experience'] as num?)?.toInt(),
+      hourlyRate: (data['hourlyRate'] as num?)?.toDouble(),
     );
-  }
-
-  static DateTime? _parseTimestamp(dynamic value) {
-    if (value is Timestamp) return value.toDate();
-    if (value is String) return DateTime.tryParse(value);
-    return null;
   }
 
   Map<String, dynamic> toMap() => {
@@ -60,7 +79,15 @@ class UserModel {
     'photoUrl': photoUrl,
     'city': city,
     'bio': bio,
+    'handle': handle,
+    'username': storedUsername,
+    'followersCount': followersCount,
+    'followingCount': followingCount,
     'isActive': isActive,
+    if (sports != null) 'sports': sports,
+    if (specialization != null) 'specialization': specialization,
+    if (experience != null) 'experience': experience,
+    if (hourlyRate != null) 'hourlyRate': hourlyRate,
     'createdAt': createdAt != null ? Timestamp.fromDate(createdAt!) : FieldValue.serverTimestamp(),
     'updatedAt': FieldValue.serverTimestamp(),
   };
@@ -74,9 +101,17 @@ class UserModel {
     String? photoUrl,
     String? city,
     String? bio,
+    String? handle,
+    String? storedUsername,
+    int? followersCount,
+    int? followingCount,
     DateTime? createdAt,
     DateTime? updatedAt,
     bool? isActive,
+    List<String>? sports,
+    String? specialization,
+    int? experience,
+    double? hourlyRate,
   }) =>
       UserModel(
         uid: uid ?? this.uid,
@@ -87,9 +122,17 @@ class UserModel {
         photoUrl: photoUrl ?? this.photoUrl,
         city: city ?? this.city,
         bio: bio ?? this.bio,
+        handle: handle ?? this.handle,
+        storedUsername: storedUsername ?? this.storedUsername,
+        followersCount: followersCount ?? this.followersCount,
+        followingCount: followingCount ?? this.followingCount,
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt,
         isActive: isActive ?? this.isActive,
+        sports: sports ?? this.sports,
+        specialization: specialization ?? this.specialization,
+        experience: experience ?? this.experience,
+        hourlyRate: hourlyRate ?? this.hourlyRate,
       );
 
   static UserRole _parseRole(String role) {
@@ -107,5 +150,19 @@ class UserModel {
       default:
         return UserRole.parent;
     }
+  }
+
+  /// Display username — prefers a stored `username` field, then the stored
+  /// `handle`, otherwise a sanitized version of the display name
+  /// (e.g. "Rahul Sharma" -> "rahulsharma").
+  String get username {
+    final stored = storedUsername?.trim() ?? '';
+    if (stored.isNotEmpty) return stored;
+    if (handle != null && handle!.trim().isNotEmpty) return handle!;
+    final sanitized = name
+        .toLowerCase()
+        .replaceAll(RegExp(r'[^a-z0-9]'), '')
+        .trim();
+    return sanitized.isNotEmpty ? sanitized : uid;
   }
 }

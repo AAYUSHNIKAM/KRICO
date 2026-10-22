@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/widgets/profile_page.dart';
+import '../../profile/presentation/public_profile_screen.dart';
 import '../../../models/user_model.dart';
 import '../../../design_system/layouts/premium_nav_item.dart';
 import '../../../design_system/layouts/premium_shell.dart';
@@ -27,7 +27,7 @@ class AdminShell extends ConsumerWidget {
       const VenueDiscoveryScreen(),
       const UsersTab(),
       const CouponsTab(),
-      ProfilePage(userModel: userModel, role: 'Admin'),
+      PublicProfileScreen(userId: userModel.uid, showAppBar: false),
     ];
 
     return PremiumShell(

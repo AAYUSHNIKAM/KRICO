@@ -76,7 +76,7 @@ class SidebarTile extends StatelessWidget {
                       style: AppTextStyles.captionXs.copyWith(color: AppColors.primary),
                     ),
                   ),
-                if (trailing != null) trailing!,
+                ?trailing,
               ],
             ),
           ),
