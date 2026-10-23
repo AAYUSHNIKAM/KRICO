@@ -1,10 +1,14 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../design_system/design_system.dart';
 import '../../../models/user_model.dart';
 import '../../../providers/auth_provider.dart';
-import 'role_workspace.dart';
+import 'parent_shell.dart';
+import 'player_shell.dart';
+import 'coach_shell.dart';
+import 'academy_shell.dart';
+import 'admin_shell.dart';
 
 class RoleRouter extends ConsumerWidget {
   const RoleRouter({super.key});
@@ -42,7 +46,18 @@ class RoleRouter extends ConsumerWidget {
   }
 
   Widget _buildShell(UserModel userModel) {
-    return RoleWorkspace(user: userModel);
+    switch (userModel.role) {
+      case UserRole.parent:
+        return ParentShell(userModel: userModel);
+      case UserRole.player:
+        return PlayerShell(userModel: userModel);
+      case UserRole.coach:
+        return CoachShell(userModel: userModel);
+      case UserRole.academy:
+        return AcademyShell(userModel: userModel);
+      case UserRole.admin:
+        return AdminShell(userModel: userModel);
+    }
   }
 }
 
