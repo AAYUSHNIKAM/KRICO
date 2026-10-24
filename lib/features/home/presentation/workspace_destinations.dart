@@ -2,296 +2,72 @@ import 'package:flutter/material.dart';
 import '../../../models/user_model.dart';
 
 class WorkspaceDestination {
+  const WorkspaceDestination(this.id, this.label, this.icon, this.description,
+      {this.section = 'Coaching workspace'});
   final String id;
   final String label;
   final IconData icon;
   final String description;
   final String section;
-
-  const WorkspaceDestination({
-    required this.id,
-    required this.label,
-    required this.icon,
-    this.description = '',
-    this.section = 'Core',
-  });
 }
 
+/// The first five destinations are the mobile navigation, in task order.
 List<WorkspaceDestination> workspaceDestinations(UserRole role) {
-  switch (role) {
-    case UserRole.player:
-      return const [
-        WorkspaceDestination(
-          id: 'dashboard',
-          label: 'Dashboard',
-          icon: Icons.speed_rounded,
-          description: 'Athlete HUD, progress streaks, and training missions',
-          section: 'Overview',
-        ),
-        WorkspaceDestination(
-          id: 'performance',
-          label: 'Performance',
-          icon: Icons.show_chart_rounded,
-          description: 'Telemetry metrics, skill radars, and session logs',
-          section: 'Training',
-        ),
-        WorkspaceDestination(
-          id: 'video_analysis',
-          label: 'AI Coach',
-          icon: Icons.videocam_rounded,
-          description: 'Frame-by-frame biomechanics and video feedback',
-          section: 'Training',
-        ),
-        WorkspaceDestination(
-          id: 'coaches',
-          label: 'Coaches',
-          icon: Icons.person_search_rounded,
-          description: 'Discover certified coaches and reserve slots',
-          section: 'Coaching',
-        ),
-        WorkspaceDestination(
-          id: 'squad_goals',
-          label: 'Squad Goals',
-          icon: Icons.emoji_events_rounded,
-          description: 'Team challenges, milestones, and shared targets',
-          section: 'Network',
-        ),
-        WorkspaceDestination(
-          id: 'challenges',
-          label: 'Challenges',
-          icon: Icons.bolt_rounded,
-          description: 'Compete in community fitness and skill trials',
-          section: 'Network',
-        ),
-        WorkspaceDestination(
-          id: 'community',
-          label: 'Community',
-          icon: Icons.people_rounded,
-          description: 'Connect with peers, mentors, and sports clubs',
-          section: 'Network',
-        ),
-        WorkspaceDestination(
-          id: 'chat',
-          label: 'Chat',
-          icon: Icons.chat_rounded,
-          description: 'Direct messaging with coaches and squadmates',
-          section: 'Network',
-        ),
-        WorkspaceDestination(
-          id: 'profile',
-          label: 'Profile',
-          icon: Icons.person_rounded,
-          description: 'Manage athlete accreditation and personal details',
-          section: 'Account',
-        ),
-      ];
-    case UserRole.coach:
-      return const [
-        WorkspaceDestination(
-          id: 'dashboard',
-          label: 'Dashboard',
-          icon: Icons.dashboard_rounded,
-          description: 'Coaching command center and key indicators',
-          section: 'Overview',
-        ),
-        WorkspaceDestination(
-          id: 'schedule',
-          label: 'Schedule',
-          icon: Icons.calendar_month_rounded,
-          description: 'Session slots, bookings, and availability grid',
-          section: 'Management',
-        ),
-        WorkspaceDestination(
-          id: 'students',
-          label: 'Students',
-          icon: Icons.people_rounded,
-          description: 'Active trainees, roster records, and progress',
-          section: 'Management',
-        ),
-        WorkspaceDestination(
-          id: 'earnings',
-          label: 'Earnings',
-          icon: Icons.account_balance_wallet_rounded,
-          description: 'Escrow vault releases, payout logs, and income',
-          section: 'Finance',
-        ),
-        WorkspaceDestination(
-          id: 'jobs',
-          label: 'Jobs',
-          icon: Icons.work_rounded,
-          description: 'Academy postings and coaching recruitment',
-          section: 'Career',
-        ),
-        WorkspaceDestination(
-          id: 'offers',
-          label: 'Offers',
-          icon: Icons.email_rounded,
-          description: 'Direct contracts and private coaching requests',
-          section: 'Career',
-        ),
-        WorkspaceDestination(
-          id: 'community',
-          label: 'Community',
-          icon: Icons.groups_rounded,
-          description: 'Coach collective, discussions, and updates',
-          section: 'Network',
-        ),
-        WorkspaceDestination(
-          id: 'chat',
-          label: 'Chat',
-          icon: Icons.chat_rounded,
-          description: 'Client communication and session coordination',
-          section: 'Network',
-        ),
-        WorkspaceDestination(
-          id: 'profile',
-          label: 'Profile',
-          icon: Icons.person_rounded,
-          description: 'Accreditation badges and public portfolio',
-          section: 'Account',
-        ),
-      ];
-    case UserRole.parent:
-      return const [
-        WorkspaceDestination(
-          id: 'dashboard',
-          label: 'Dashboard',
-          icon: Icons.dashboard_rounded,
-          description: 'Parent Sports Command',
-          section: 'Overview',
-        ),
-        WorkspaceDestination(
-          id: 'coaches',
-          label: 'Coaches',
-          icon: Icons.person_search_rounded,
-          description: 'Discover and evaluate verified mentors',
-          section: 'Coaching',
-        ),
-        WorkspaceDestination(
-          id: 'progress',
-          label: 'Progress',
-          icon: Icons.show_chart_rounded,
-          description: 'Track child performance metrics and attendance',
-          section: 'Monitoring',
-        ),
-        WorkspaceDestination(
-          id: 'community',
-          label: 'Community',
-          icon: Icons.people_rounded,
-          description: 'Sports community forums and announcements',
-          section: 'Network',
-        ),
-        WorkspaceDestination(
-          id: 'chat',
-          label: 'Chat',
-          icon: Icons.chat_rounded,
-          description: 'Direct messaging with assigned coaches',
-          section: 'Network',
-        ),
-        WorkspaceDestination(
-          id: 'profile',
-          label: 'Profile',
-          icon: Icons.person_rounded,
-          description: 'Family account settings and payment preferences',
-          section: 'Account',
-        ),
-      ];
-    case UserRole.academy:
-      return const [
-        WorkspaceDestination(
-          id: 'dashboard',
-          label: 'Dashboard',
-          icon: Icons.dashboard_rounded,
-          description: 'Academy Operations Hub',
-          section: 'Overview',
-        ),
-        WorkspaceDestination(
-          id: 'batches',
-          label: 'Batches',
-          icon: Icons.group_rounded,
-          description: 'Batch formations, time tables, and capacity',
-          section: 'Operations',
-        ),
-        WorkspaceDestination(
-          id: 'coaches',
-          label: 'Coaches',
-          icon: Icons.sports_rounded,
-          description: 'Staff coaches, performance audits, and assignments',
-          section: 'Staff',
-        ),
-        WorkspaceDestination(
-          id: 'community',
-          label: 'Community',
-          icon: Icons.people_rounded,
-          description: 'Academy announcements and athlete parent portal',
-          section: 'Network',
-        ),
-        WorkspaceDestination(
-          id: 'advertising',
-          label: 'Advertising',
-          icon: Icons.campaign_rounded,
-          description: 'Promotion campaigns and admission pipelines',
-          section: 'Growth',
-        ),
-        WorkspaceDestination(
-          id: 'jobs',
-          label: 'Jobs',
-          icon: Icons.work_rounded,
-          description: 'Post hiring requisitions for qualified mentors',
-          section: 'Staff',
-        ),
-        WorkspaceDestination(
-          id: 'chat',
-          label: 'Chat',
-          icon: Icons.chat_rounded,
-          description: 'Staff and student communication desk',
-          section: 'Network',
-        ),
-        WorkspaceDestination(
-          id: 'profile',
-          label: 'Profile',
-          icon: Icons.person_rounded,
-          description: 'Academy accreditation and legal credentials',
-          section: 'Account',
-        ),
-      ];
-    case UserRole.admin:
-      return const [
-        WorkspaceDestination(
-          id: 'dashboard',
-          label: 'Dashboard',
-          icon: Icons.dashboard_rounded,
-          description: 'Platform Command Center',
-          section: 'Overview',
-        ),
-        WorkspaceDestination(
-          id: 'venues',
-          label: 'Venues',
-          icon: Icons.stadium_rounded,
-          description: 'Facility approval, court specs, and turf audits',
-          section: 'Management',
-        ),
-        WorkspaceDestination(
-          id: 'users',
-          label: 'Users',
-          icon: Icons.people_rounded,
-          description: 'Account security, role governance, and verification',
-          section: 'Governance',
-        ),
-        WorkspaceDestination(
-          id: 'coupons',
-          label: 'Coupons',
-          icon: Icons.local_offer_rounded,
-          description: 'Discount campaigns and promotional pricing rules',
-          section: 'Finance',
-        ),
-        WorkspaceDestination(
-          id: 'profile',
-          label: 'Profile',
-          icon: Icons.person_rounded,
-          description: 'Platform executive credentials',
-          section: 'Account',
-        ),
-      ];
-  }
+  const home = WorkspaceDestination('home', 'Home', Icons.home_outlined, 'Your next steps, in one place');
+  const find = WorkspaceDestination('discover', 'Find a coach', Icons.person_search_outlined, 'Compare coaches, review their profiles and request a session');
+  const bookings = WorkspaceDestination('bookings', 'Bookings', Icons.event_note_outlined, 'Track requests, upcoming sessions and your booking history');
+  const messages = WorkspaceDestination('messages', 'Messages', Icons.chat_bubble_outline, 'Coordinate training and discuss session details');
+  const community = WorkspaceDestination('community', 'Community', Icons.groups_outlined, 'Share updates and connect with other athletes', section: 'Community & opportunities');
+  const profile = WorkspaceDestination('profile', 'My profile', Icons.person_outline, 'Manage your identity and public profile', section: 'Account');
+  const contracts = WorkspaceDestination('contracts', 'Agreements', Icons.description_outlined, 'Review coaching terms and signatures', section: 'Account');
+  const venues = WorkspaceDestination('venues', 'Venues', Icons.stadium_outlined, 'Find a place to train and book a venue', section: 'Training tools');
+
+  return switch (role) {
+    UserRole.player => [
+      home, find, bookings, messages,
+      const WorkspaceDestination('growth', 'Growth', Icons.trending_up, 'Review your training journey, goals and achievements', section: 'Player development'),
+      const WorkspaceDestination('performance', 'Performance', Icons.show_chart, 'Track and compare your training metrics', section: 'Player development'),
+      const WorkspaceDestination('video', 'Video review', Icons.videocam_outlined, 'Upload training footage and review feedback', section: 'Player development'),
+      const WorkspaceDestination('squad', 'Squad goals', Icons.flag_outlined, 'Work towards shared team goals', section: 'Player development'),
+      const WorkspaceDestination('challenges', 'Challenges', Icons.bolt_outlined, 'Keep practice engaging with training challenges', section: 'Player development'),
+      venues, community, contracts, profile,
+    ],
+    UserRole.parent => [
+      home, find, bookings, messages,
+      const WorkspaceDestination('children', 'My players', Icons.family_restroom, 'Manage linked players and log their training', section: 'Player development'),
+      const WorkspaceDestination('progress', 'Player progress', Icons.trending_up, 'Follow the progress of each linked player', section: 'Player development'),
+      venues, community, contracts, profile,
+    ],
+    UserRole.coach => [
+      home,
+      const WorkspaceDestination('requests', 'Requests', Icons.inbox_outlined, 'Accept or decline incoming booking requests'),
+      const WorkspaceDestination('schedule', 'Schedule', Icons.calendar_month_outlined, 'Manage sessions, attendance and completion'),
+      const WorkspaceDestination('students', 'Players', Icons.people_outline, 'Review your players and record their progress'),
+      messages,
+      const WorkspaceDestination('availability', 'Availability', Icons.edit_calendar_outlined, 'Publish the dates and times players can book'),
+      const WorkspaceDestination('earnings', 'Earnings', Icons.account_balance_wallet_outlined, 'Review your session earnings', section: 'Business management'),
+      const WorkspaceDestination('overview', 'Business overview', Icons.insights_outlined, 'Review statistics, milestones and your plan', section: 'Business management'),
+      const WorkspaceDestination('jobs', 'Academy jobs', Icons.work_outline, 'Find and apply for academy opportunities', section: 'Community & opportunities'),
+      const WorkspaceDestination('offers', 'Academy offers', Icons.mail_outline, 'Review invitations and offers from academies', section: 'Community & opportunities'),
+      community, contracts, profile,
+    ],
+    UserRole.academy => [
+      home,
+      const WorkspaceDestination('batches', 'Batches', Icons.groups_outlined, 'Organize training groups and batch details'),
+      const WorkspaceDestination('coaches', 'Coaches', Icons.sports_outlined, 'Manage your coaching team and invitations'),
+      messages,
+      const WorkspaceDestination('jobs', 'Recruitment', Icons.work_outline, 'Post coaching jobs and review recruitment'),
+      const WorkspaceDestination('overview', 'Academy overview', Icons.insights_outlined, 'Review academy statistics and operations', section: 'Business management'),
+      const WorkspaceDestination('advertising', 'Advertising', Icons.campaign_outlined, 'Manage your academy campaigns', section: 'Business management'),
+      community, contracts, profile,
+    ],
+    UserRole.admin => [
+      home,
+      const WorkspaceDestination('users', 'Users', Icons.people_outline, 'Review platform users and account access', section: 'Platform operations'),
+      const WorkspaceDestination('venues', 'Venues', Icons.stadium_outlined, 'Review and manage training venues', section: 'Platform operations'),
+      const WorkspaceDestination('overview', 'Operations', Icons.insights_outlined, 'Review platform statistics and administrative tasks', section: 'Platform operations'),
+      const WorkspaceDestination('coupons', 'Coupons', Icons.local_offer_outlined, 'Manage promotional coupons', section: 'Platform operations'),
+      messages, contracts, profile,
+    ],
+  };
 }
