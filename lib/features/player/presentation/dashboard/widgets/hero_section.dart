@@ -313,24 +313,9 @@ class _HeroContent extends StatelessWidget {
                     )),
                   ],
                 ).animate(delay: 200.ms).fadeIn(duration: 350.ms, curve: Curves.easeOut).slideY(begin: 0.06, end: 0),
-          if (isDesktop) ...[
-            const SizedBox(height: SpacingScale.s20),
-            Row(
-              children: [
-                if (hasUpcoming && nextSessionTime != null) ...[
-                  _NextSessionCountdown(nextSessionTime: nextSessionTime),
-                  const SizedBox(width: SpacingScale.s16),
-                ],
-                _StartTrainingButton(),
-              ],
-            ),
-          ] else ...[
-            if (hasUpcoming && nextSessionTime != null) ...[
-              const SizedBox(height: SpacingScale.s16),
-              _NextSessionCountdown(nextSessionTime: nextSessionTime),
-            ],
+          if (hasUpcoming && nextSessionTime != null) ...[
             const SizedBox(height: SpacingScale.s16),
-            _StartTrainingButton(),
+            _NextSessionCountdown(nextSessionTime: nextSessionTime),
           ],
         ],
       ),
@@ -470,68 +455,5 @@ class _NextSessionCountdown extends StatelessWidget {
         ],
       ),
     ).animate(delay: 200.ms).fadeIn(duration: 300.ms);
-  }
-}
-
-class _StartTrainingButton extends StatefulWidget {
-  @override
-  State<_StartTrainingButton> createState() => _StartTrainingButtonState();
-}
-
-class _StartTrainingButtonState extends State<_StartTrainingButton> {
-  bool _hovered = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return MouseRegion(
-      onEnter: (_) => setState(() => _hovered = true),
-      onExit: (_) => setState(() => _hovered = false),
-      child: GestureDetector(
-        onTap: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Training session started! Track your progress in the Performance tab.'),
-              backgroundColor: AppColors.emerald,
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
-        },
-        child: AnimatedContainer(
-          duration: DurationTokens.fast,
-          padding: const EdgeInsets.symmetric(horizontal: SpacingScale.s24, vertical: SpacingScale.s12),
-          decoration: BoxDecoration(
-            color: isDark ? AppColors.heroDarkCta : AppColors.heroLightCta,
-            borderRadius: AppRadius.brXl2,
-            boxShadow: [
-              BoxShadow(
-                color: (isDark ? AppColors.volt : const Color(0xFF0F172A))
-                    .withValues(alpha: _hovered ? 0.35 : 0.18),
-                blurRadius: _hovered ? 20 : 12,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.play_arrow_rounded,
-                size: 20,
-                color: isDark ? AppColors.heroDarkCtaText : AppColors.heroLightCtaText,
-              ),
-              const SizedBox(width: SpacingScale.s8),
-              Text(
-                'Start Training',
-                style: AppTextStyles.buttonLg.copyWith(
-                  color: isDark ? AppColors.heroDarkCtaText : AppColors.heroLightCtaText,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    ).animate(delay: 250.ms).fadeIn(duration: 400.ms).slideY(begin: 0.08, end: 0);
   }
 }

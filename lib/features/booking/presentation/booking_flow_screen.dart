@@ -31,7 +31,7 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
   String? _selectedSlot;
   bool _submitting = false;
   String _selectedSport = 'General';
-  String _sessionType = '1-on-1 Training';
+  static const String _sessionType = 'Standard Coaching';
   String _paymentMethod = 'UPI / Instant Pay';
   late TextEditingController _notesCtrl;
   late TextEditingController _couponCtrl;
@@ -43,12 +43,6 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
   bool _isValidatingCoupon = false;
   String? _confirmedSessionId;
 
-  final List<String> _sessionTypes = [
-    '1-on-1 Training',
-    'Technique Assessment',
-    'Fitness & Conditioning',
-    'Match Strategy',
-  ];
 
   final List<String> _paymentMethods = [
     'UPI / Instant Pay',
@@ -338,56 +332,6 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
               ),
               onSelected: (_) => setState(() => _selectedSport = sport),
-            );
-          }).toList(),
-        ),
-        const SizedBox(height: SpacingScale.s20),
-        Text('Training Session Type', style: AppTextStyles.title3.copyWith(color: textPrimary, fontWeight: FontWeight.w700)),
-        const SizedBox(height: SpacingScale.s8),
-        Column(
-          children: _sessionTypes.map((type) {
-            final isSelected = _sessionType == type;
-            return InkWell(
-              onTap: () => setState(() => _sessionType = type),
-              borderRadius: AppRadius.brXl2,
-              child: Container(
-                margin: const EdgeInsets.only(bottom: SpacingScale.s8),
-                padding: const EdgeInsets.all(SpacingScale.s12),
-                decoration: BoxDecoration(
-                  color: isSelected ? AppColors.primary.withValues(alpha: 0.1) : (isDark ? AppColors.card : AppColors.lightCard),
-                  borderRadius: AppRadius.brXl2,
-                  border: Border.all(
-                    color: isSelected ? AppColors.primary : (isDark ? AppColors.border : AppColors.lightBorder).withValues(alpha: 0.5),
-                    width: isSelected ? 1.5 : 1,
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
-                      color: isSelected ? AppColors.primary : textSecondary,
-                      size: 20,
-                    ),
-                    const SizedBox(width: SpacingScale.s12),
-                    Expanded(
-                      child: Text(
-                        type,
-                        style: AppTextStyles.body.copyWith(
-                          color: textPrimary,
-                          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                    Text(
-                      '₹${_sessionPrice.toInt()}',
-                      style: AppTextStyles.bodySm.copyWith(
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
             );
           }).toList(),
         ),
@@ -1053,10 +997,14 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
             ),
             const SizedBox(height: SpacingScale.s32),
             PrimaryButton(
-              label: 'View My Bookings',
-              icon: Icons.calendar_today_rounded,
+              label: 'View Booked Session',
+              icon: Icons.sports_score_rounded,
               onPressed: () {
-                context.go('/home');
+                if (_confirmedSessionId != null && _confirmedSessionId!.isNotEmpty) {
+                  context.push('/session/' + _confirmedSessionId);
+                } else {
+                  context.go('/home');
+                }
               },
               expanded: true,
             ),

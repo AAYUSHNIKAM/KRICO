@@ -268,6 +268,12 @@ class _CoachDetailContent extends StatelessWidget {
                     loading: () => const SizedBox.shrink(),
                     error: (e, s) => const SizedBox.shrink(),
                   ),
+                  _TrainingCurriculumSection(
+                    coach: coach,
+                    isDark: isDark,
+                    textPrimary: textPrimary,
+                    textSecondary: textSecondary,
+                  ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -871,6 +877,273 @@ class _DetailError extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+
+class _TrainingCurriculumSection extends StatelessWidget {
+  final CoachModel coach;
+  final bool isDark;
+  final Color textPrimary;
+  final Color textSecondary;
+
+  const _TrainingCurriculumSection({
+    required this.coach,
+    required this.isDark,
+    required this.textPrimary,
+    required this.textSecondary,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final routines = coach.routines;
+    final cardBg = isDark ? AppColors.card : AppColors.lightCard;
+    final borderColor = (isDark ? AppColors.border : AppColors.lightBorder).withValues(alpha: 0.6);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withValues(alpha: 0.15),
+                          borderRadius: AppRadius.brSm,
+                        ),
+                        child: const Icon(Icons.fitness_center_rounded, size: 16, color: AppColors.primary),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Training Curriculum & Routines',
+                          style: AppTextStyles.title2.copyWith(fontWeight: FontWeight.w700, color: textPrimary),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Standardized routines with 100% KRICO XP progression',
+                    style: AppTextStyles.caption.copyWith(color: textSecondary),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: SpacingScale.s12),
+        Container(
+          padding: const EdgeInsets.all(SpacingScale.s12),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xF1131D31) : const Color(0xFF1F5F:),
+            borderRadius: AppRadius.brLg,
+            border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Icon(Icons.stars_rounded, color: AppColors.primary, size: 18),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Every session awards up to 25 XP (scaling up to 45 XP as player level increases). Sub-routine XP is earned based on verified completed progress during session checkout.',
+                  style: TextStyle(
+                    fontSize: 12,
+                    height: 1.4,
+                    color: isDark ? const Color(0xF94A3B8) : const Color(0xFF475569),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: SpacingScale.s12),
+        if (routines.isEmpty)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(SpacingScale.s16),
+            decoration: BoxDecoration(
+              color: cardBg,
+              borderRadius: AppRadius.brXl,
+              border: Border.all(color: borderColor),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.sports_rounded, color: AppColors.primary, size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        coach.specialization + ' Standard Training Framework',
+                        style: AppTextStyles.title3.copyWith(fontWeight: FontWeight.sw700, color: textPrimary),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'This coach structures bookings into standardized sub-routines (Warm-Up, Technical Drills, High-Intensity Match Scenarios, & Tactical Assessment) with 100% total XP distribution.',
+                  style: AppTextStyles.bodySm.copyWith(color: textSecondary, height: 1.4),
+                ),
+              ],
+            ),
+          )
+        else
+          for (final routine in routines)
+            Container(
+              margin: const EdgeInsets.only(bottom: SpacingScale.s12),
+              padding: const EdgeInsets.all(SpacingScale.s16),
+              decoration: BoxDecoration(
+                color: cardBg,
+                borderRadius: AppRadius.brXl,
+                border: Border.all(color: borderColor),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          routine.name,
+                          style: AppTextStyles.title3.copyWith(fontWeight: FontWeight.w700, color: textPrimary),
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withValues(alpha: 0.15),
+                          borderRadius: AppRadius.brSm,
+                        ),
+                        child: Text(
+                          routine.sport,
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (routine.description.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      routine.description,
+                      style: AppTextStyles.bodySm.copyWith(color: textSecondary),
+                    ),
+                  ],
+                  const SizedBox(height: SpacingScale.s12),
+                  const Divider(height: 1),
+                  const SizedBox(height: SpacingScale.s8),
+                  Text(
+                    'SUB-ROUTINES �� XP BREAKDOWN',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.8,
+                      color: textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: SpacingScale.s8),
+                  for (final sub in routine.subRoutines)
+                    Container(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0x0F172A) : const Color(0xF8FAFC),
+                        borderRadius: AppRadius.brMd,
+                        border: Border.all(
+                          color: (isDark ? AppColors.border : AppColors.lightBorder).withValues(alpha: 0.4),
+                        ),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              sub.percentageAllocation.toString() + '% XP',
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w800,
+                                color: Color(0x0F172A),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  sub.name,
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                    color: textPrimary,
+                                  ),
+                                ),
+                                if (sub.description.isNotEmpty)
+                                  Text(
+                                    sub.description,
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: textSecondary,
+                                    ),
+                                  ),
+                                const SizedBox(height: 3),
+                                Row(
+                                  children: [
+                                    if (sub.completionCriteria.isNotEmpty)
+                                      Expanded(
+                                        child: Text(
+                                          'Criteria: ' + sub.completionCriteria,
+                                          style: const TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.sw700,
+                                            color: AppColors.primary,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    if (sub.progressTrackingField.isNotEmpty)
+                                      Text(
+                                        'Metric: ' + sub.progressTrackingField,
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          color: textSecondary,
+                                        ),
+                                     ),
+                                ],
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+        const SizedBox(height: SpacingScale.s20),
+      ],
     );
   }
 }

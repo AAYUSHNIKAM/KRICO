@@ -6,13 +6,22 @@ class ReviewService {
 
   final FirebaseFirestore _firestore;
 
+  /// Fetches reviews for a coach without requiring a Firestore composite index.
+  /// Sorts by createdAt descending in memory.
   Stream<List<ReviewModel>> getCoachReviews(String coachId) {
     return _firestore
         .collection('reviews')
         .where('coachId', isEqualTo: coachId)
-        .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snap) => snap.docs.map((doc) => ReviewModel.fromDoc(doc)).toList());
+        .map((snap) {
+      final list = snap.docs.map((doc) => ReviewModel.fromDoc(doc)).toList();
+      list.sort((a, b) {
+        final aTime = a.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+        final bTime = b.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+        return bTime.compareTo(aTime);
+      });
+      return list;
+    });
   }
 
   Future<void> addReview({

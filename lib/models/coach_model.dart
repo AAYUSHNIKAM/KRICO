@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../core/utils/date_parser.dart';
+import 'training_routine_model.dart';
 
 class CoachModel {
   const CoachModel({
@@ -22,6 +23,8 @@ class CoachModel {
     this.certificates,
     this.workExperience,
     this.isVerified = false,
+    this.hasConfiguredRoutines = false,
+    this.routines,
     this.academyId,
     this.leadTimeHours = 2,
     this.penaltyBalance = 0.0,
@@ -48,11 +51,17 @@ class CoachModel {
   final List<String>? certificates;
   final List<Map<String, dynamic>>? workExperience;
   final bool isVerified;
+  final bool hasConfiguredRoutines;
+  final List<TrainingRoutineModel>? routines;
   final String? academyId;
   final int leadTimeHours;
   final double penaltyBalance;
   final DateTime? createdAt;
   final DateTime? updatedAt;
+
+  /// A coach\'s profile is complete and available for booking only when
+  /// mandatory training routines have been configured and saved.
+  bool get isBookingEligible => hasConfiguredRoutines;
 
   factory CoachModel.fromDoc(DocumentSnapshot<Map<String, dynamic>> doc) {
     final data = doc.data()!;
@@ -85,6 +94,10 @@ class CoachModel {
           ?.map((e) => Map<String, dynamic>.from(e as Map))
           .toList(),
       isVerified: data['isVerified'] as bool? ?? false,
+      hasConfiguredRoutines: data['hasConfiguredRoutines'] as bool? ?? false,
+      routines: (data['routines'] as List<dynamic>?)
+          ?.map((e) => TrainingRoutineModel.fromMap(Map<String, dynamic>.from(e as Map)))
+          .toList(),
       academyId: data['academyId'] as String?,
       leadTimeHours: (data['leadTimeHours'] as num?)?.toInt() ?? 2,
       penaltyBalance: (data['penaltyBalance'] as num?)?.toDouble() ?? 0.0,
@@ -114,6 +127,8 @@ class CoachModel {
     'certificates': certificates,
     'workExperience': workExperience,
     'isVerified': isVerified,
+    'hasConfiguredRoutines': hasConfiguredRoutines,
+    if (routines != null) 'routines': routines!.map((r) => r.toMap()).toList(),
     'academyId': academyId,
     'leadTimeHours': leadTimeHours,
     'penaltyBalance': penaltyBalance,

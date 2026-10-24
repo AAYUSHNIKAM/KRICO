@@ -1,3 +1,5 @@
+import '../../features/coach/presentation/coach_training_routine_setup_screen.dart';
+import '../../features/leaderboard/presentation/global_leaderboard_screen.dart';
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -83,6 +85,8 @@ abstract class AppRoutes {
   static const String performance = '/performance';
   static const String myBookings = '/bookings';
   static const String sessions = '/sessions';
+  static const String coachTrainingRoutines = '/coach-training-routines/:coachId';
+  static const String leaderboard = '/leaderboard';
 
 }
 
@@ -399,7 +403,18 @@ GoRouter buildRouter() {
           );
         },
       ),
+            GoRoute(
+        path: AppRoutes.coachTrainingRoutines,
+        builder: (context, state) {
+          final coachId = state.pathParameters['coachId'] ?? '';
+          return CoachTrainingRoutineSetupScreen(coachId: coachId);
+        },
+      ),
       GoRoute(
+        path: AppRoutes.leaderboard,
+        builder: (context, state) => const GlobalLeaderboardScreen(),
+      ),
+GoRoute(
         path: AppRoutes.sessions,
         redirect: (context, state) => AppRoutes.myBookings,
       ),

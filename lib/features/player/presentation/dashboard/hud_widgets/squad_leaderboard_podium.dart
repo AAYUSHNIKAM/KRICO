@@ -69,7 +69,7 @@ class SquadLeaderboardPodium extends StatelessWidget {
                 ),
               ),
               TextButton(
-                onPressed: () => context.push('/squad-goals'),
+                onPressed: () => context.push('/leaderboard'),
                 child: Text('View All', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
               ),
             ],

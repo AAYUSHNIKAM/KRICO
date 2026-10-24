@@ -60,6 +60,13 @@ class AthleteTierShowcase extends StatelessWidget {
                     ),
                     Text(
                       'Tier 8: Elite Competitor',
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Universal certification framework based on global KRICO XP',
+                      style: AppTextStyles.captionXs.copyWith(
+                        color: subColor,
+                      ),
                       style: AppTextStyles.title3.copyWith(
                         fontWeight: FontWeight.w700,
                         color: textColor,
@@ -69,7 +76,7 @@ class AthleteTierShowcase extends StatelessWidget {
                 ),
               ),
               FilledButton.icon(
-                onPressed: () => context.push('/player-certificates/'),
+                onPressed: () => context.push('/player-certificates/' + playerId),
                 style: FilledButton.styleFrom(
                   backgroundColor: isDark ? AppColors.volt : const Color(0xFF0F172A),
                   foregroundColor: isDark ? AppColors.midnightObsidian : Colors.white,

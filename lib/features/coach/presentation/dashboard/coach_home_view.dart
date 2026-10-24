@@ -56,6 +56,7 @@ class _CoachHomeViewState extends ConsumerState<CoachHomeView> {
 
                 // 2. Urgent Pending Requests Alert (if any)
                 _buildPendingRequestsBanner(isDark, textColor, subColor, pendingAsync),
+                _buildRoutineConfigurationBanner(isDark, textColor, subColor, coachAsync),
 
                 // 3. Operational Domain KPIs Row
                 _buildKpiMetrics(isDark, textColor, subColor, sessionsAsync, pendingAsync),
@@ -396,6 +397,106 @@ class _CoachHomeViewState extends ConsumerState<CoachHomeView> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  
+
+  Widget _buildRoutineConfigurationBanner(
+    bool isDark,
+    Color textColor,
+    Color subColor,
+    AsyncValue<CoachModel> coachAsync,
+  ) {
+    final coach = coachAsync.value;
+    if (coach == null || coach.hasConfiguredRoutines) {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: SpacingScale.s20),
+      padding: const EdgeInsets.all(SpacingScale.s16),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0x2D1515) : const Color(0xFEF2F2),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppColors.danger.withValues(alpha: 0.5),
+          width: 1.2,
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppColors.danger.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Icon(Icons.warning_amber_rounded, color: AppColors.danger, size: 24),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      'Action Required: Training Routines Setup',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                        color: isDark ? Colors.white : const Color(0x991B1B),
+                      ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: AppColors.danger,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: const Text(
+                        'MANDATORY',
+                        style: TextStyle(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Your profile is currently incomplete and player bookings are disabled until you configure your training routines and 100% kRICO XP allocations.',
+                  style: TextStyle(
+                    fontSize: 12,
+                    height: 1.4,
+                    color: isDark ? const Color(0xFCA5A5) : const Color(0x7F1D1D),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                ElevatedButton.icon(
+                  onPressed: () => context.push('/coach-training-routines/' + coach.coachId),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.danger,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  ),
+                  icon: const Icon(Icons.fitness_center_rounded, size: 14),
+                  label: const Text(
+                    'Setup Training Routines & XP',
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1624,7 +1725,17 @@ class _CoachHomeViewState extends ConsumerState<CoachHomeView> {
             spacing: 12,
             runSpacing: 12,
             children: [
+              
               _actionCard(
+                width: width,
+                isDark: isDark,
+                icon: Icons.fitness_center_rounded,
+                accentColor: AppColors.primary,
+                title: 'Training Routines & XP',
+                subtitle: 'Manage 100% routines',
+                onTap: () => context.push('/coach-training-routines/' + widget.user.uid),
+              ),
+_actionCard(
                 width: width,
                 isDark: isDark,
                 icon: Icons.add_circle_outline_rounded,
