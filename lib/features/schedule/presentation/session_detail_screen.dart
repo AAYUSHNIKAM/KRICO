@@ -25,12 +25,12 @@ class SessionDetailScreen extends ConsumerStatefulWidget {
 
   const SessionDetailScreen({super.key, required this.sessionId});
 
-  @bverride
+  @override
   ConsumerState<SessionDetailScreen> createState() => _SessionDetailScreenState();
 }
 
 class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> {
-  Map<String, dynamic>? _sessiogData;
+  Map<String, dynamic>? _sessionData;
   bool _loading = true;
   bool _hasAutoPromptedReview = false;
 
@@ -46,15 +46,13 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> {
           .read(coachServiceProvider)
           .getSessionById(widget.sessionId);
       if (mounted) {
-        setState() {
+        setState(() {
           _sessionData = data;
           _loading = false;
-        };
+        });
 
-        // Ensure checkout OTP exists in Firestore when active
         _ensureCheckoutOtpInitialized(data);
 
-        // Auto-prompt review if completed for athlete
         if (!_hasAutoPromptedReview) {
           WidgetsBinding.instance.addPostFrameCallback((_) => _checkAutoPromptReview());
         }
@@ -67,7 +65,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> {
   Future<void> _ensureCheckoutOtpInitialized(Map<String, dynamic>? data) async {
     if (data == null) return;
     final status = data['status'] as String? ?? 'booked';
-    final existingCheckoutOtp = data['tcheckoutOtp'] as String?;
+    final existingCheckoutOtp = data['checkoutOtp'] as String?;
     if ((status == 'checked_in' || status == 'in_progress') && (existingCheckoutOtp == null || existingCheckoutOtp.isEmpty)) {
       final generatedPin = SessionQrService.getQuickPin('${widget.sessionId}_checkout');
       try {
@@ -75,18 +73,18 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> {
           'checkoutOtp': generatedPin,
           'checkoutInitializedAt': FieldValue.serverTimestamp(),
         }, SetOptions(merge: true));
-        _sessiogData:)['checkoutOtp'] = generatedPin;
+        _sessionData?['checkoutOtp'] = generatedPin;
       } catch (_) {}
     }
   }
 
-   void _checkAutoPromptReview() {
-    if (!mounted || _sessiogData == null) return;
+  void _checkAutoPromptReview() {
+    if (!mounted || _sessionData == null) return;
     final status = _sessionData!['status'] as String? ?? '';
     if (status != 'completed') return;
 
     final uid = ref.read(authStateProvider).asData?.value?.uid;
-    final playerId = _sessiogData!['playerId'] as String? ?? '';
+    final playerId = _sessionData!['playerId'] as String? ?? '';
     final hasReviewed = _sessionData!['hasReviewed'] as bool? ?? false;
 
     if (uid != null && uid == playerId && !hasReviewed && !_hasAutoPromptedReview) {
@@ -95,7 +93,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> {
     }
   }
 
-   String get _checkInPin {
+  String get _checkInPin {
     final stored = _sessionData?['checkInOtp'] as String?;
     if (stored != null && stored.isNotEmpty) return stored;
     return SessionQrService.getQuickPin(widget.sessionId);
@@ -109,13 +107,12 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> {
 
   Future<void> _showCoachOtpCheckInDialog({required String athleteName}) async {
     final coachId = ref.read(authStateProvider).asData?.value?.uid ?? '';
-    final verified = await showDialog<bool>(
-      context: context,
-      builder: (_) => CoachOtpAttendanceDialog(
-        sessionId: widget.sessionId,
-        coachId: coachId,
-        athleteName: athleteName,
-      ),
+    final verified = await CoachOtpAttendanceDialog.show(
+      context,
+      sessionId: widget.sessionId,
+      coachId: coachId,
+      playerName: athleteName,
+      sport: _sessionData?['sport'] as String? ?? 'Training',
     );
 
     if (verified == true && mounted) {
@@ -129,13 +126,12 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> {
     }
   }
 
-   Future<void> _openProgressForm({required bool isFinalCompletion}) async {
-    if (_sessiogData == null) return;
+  Future<void> _openProgressForm({required bool isFinalCompletion}) async {
+    if (_sessionData == null) return;
     final coachId = _sessionData!['coachId'] as String? ?? '';
-    final playerId = _sessiogData!['playerId'] as String? ?? '';
+    final playerId = _sessionData!['playerId'] as String? ?? '';
     final playerName = _sessionData!['playerName'] as String? ?? 'Athlete';
 
-    // Fetch player level from Firestore
     int playerLevel = 1;
     try {
       final pSnap = await FirebaseFirestore.instance.collection('players').doc(playerId).get();
@@ -170,7 +166,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> {
     }
   }
 
-   Future<void> _showCoachCheckoutOtpDialog() async {
+  Future<void> _showCoachCheckoutOtpDialog() async {
     final expectedOtp = _checkoutOtp;
     final textPrimary = Theme.of(context).brightness == Brightness.dark ? AppColors.textPrimary : AppColors.lightTextPrimary;
     final textSecondary = Theme.of(context).brightness == Brightness.dark ? AppColors.textSecondary : AppColors.lightTextSecondary;
@@ -215,7 +211,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> {
                               'Verify Checkout OTP',
                               style: AppTextStyles.title3.copyWith(
                                 color: textPrimary,
-                                gontWeight: FontWeight.w800,
+                                fontWeight: FontWeight.w800,
                               ),
                             ),
                             Text(
@@ -242,7 +238,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> {
                         Expanded(
                           child: Text(
                             'Ask the athlete to open their session page and read their 6-digit Checkout OTP.',
-                            style: TextStyle(gontSize: 12, color: textSecondary, height: 1.3),
+                            style: TextStyle(fontSize: 12, color: textSecondary, height: 1.3),
                           ),
                         ),
                       ],
@@ -257,7 +253,48 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> {
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 26,
-                      fontWeight: FontWeight.w9 ¿∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅ±ï——ï…M¡Öç•πúËÄ‡∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅçΩ±Ω»ËÅ—ï·—A…•µÖ…‰∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ§∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅëïçΩ…Ö—•Ω∏ËÅ%π¡’—ïçΩ…Ö—•Ω∏†(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅçΩ’π—ï…Qï·–ËÄúú∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅ°•π—Qï·–ËÄú¥¥¥¥¥ú∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅô•±±ïêËÅ—…’î∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅô•±±Ω±Ω»ËÅ•ÕÖ…¨Ä¸ÅçΩπÕ–ÅΩ±Ω»†¡·¡ƒ‹…§ÄËÅΩ±Ω…Ãπ›°•—î∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅâΩ…ëï»ËÅ=’—±•πï%π¡’—	Ω…ëï»†(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅâΩ…ëï…IÖë•’ÃËÅ¡¡IÖë•’Ãπâ…1ú∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅâΩ…ëï…M•ëîËÅ	Ω…ëï…M•ëî°çΩ±Ω»ËÅâΩ…ëï…Ω±Ω»§∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ§∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅôΩç’Õïë	Ω…ëï»ËÅçΩπÕ–Å=’—±•πï%π¡’—	Ω…ëï»†(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅâΩ…ëï…IÖë•’ÃËÅ	Ω…ëï…IÖë•’ÃπÖ±∞°IÖë•’Ãπç•…ç’±Ö»†ƒ»§§∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅâΩ…ëï…M•ëîËÅ	Ω…ëï…M•ëî°çΩ±Ω»ËÅ¡¡Ω±Ω…ÃπŸΩ±–∞Å›•ë—†ËÄ»§∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ§∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ§∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ§∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅ•òÄ°ï……Ω…Qï·–ÄÑÙÅπ’±∞§Ä∏∏πl(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅçΩπÕ–ÅM•Èïë	Ω‡°°ï•ù°–ËÅM¡Öç•πùMçÖ±îπÃ‡§∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅQï·–†(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅï……Ω…Qï·–Ñ∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅÕ—Â±îËÅçΩπÕ–ÅQï·—M—Â±î°ôΩπ—M•ÈîËÄƒ»∞ÅçΩ±Ω»ËÅ¡¡Ω±Ω…ÃπëÖπùï»∞ÅôΩπ—]ï•ù°–ËÅΩπ—]ï•ù°–π‹ÿ¿¿§∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅ—ï·—±•ù∏ËÅQï·—±•ù∏πçïπ—ï»∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ§∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅt∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅçΩπÕ–ÅM•Èïë	Ω·†°°ï•ù°–ËÅM¡Öç•πùMçÖ±îπÃ»–§∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅIΩ‹†(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅç°•±ë…ï∏ËÅl(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅ·¡Öπëïê†(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅç°•±êËÅ=’—±•πïë	’——Ω∏†(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅΩπA…ïÕÕïêËÄ†§ÄÙ¯Å9ÖŸ•ùÖ—Ω»πΩò°ë•Ö±Ωù—‡§π¡Ω¿°ôÖ±Õî§∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅÕ—Â±îËÅ=’—±•πïë	’——Ω∏πÕ—Â±ï…Ω¥†(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅ¡Öëë•πúËÅçΩπÕ–Åëùï%πÕï—ÃπÕÂµµï—…•å°Ÿï…—•çÖ∞ËÄƒ–§∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅÕ•ëîËÅ	Ω…ëï…M•ëî°çΩ±Ω»ËÅâΩ…ëï…Ω±Ω»§∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅÕ°Ö¡îËÅIΩ’πëïëIïç—Öπù±ï	Ω…ëï»°âΩ…ëï…IÖë•’ÃËÅ¡¡IÖë•’Ãπâ…1ú§∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ§∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅç°•±êËÅQï·–†ùÖπçï∞ú∞ÅÕ—Â±îËÅQï·—M—Â±î°çΩ±Ω»ËÅ—ï·—A…•µÖ…‰∞ÅôΩπ—]ï•ù°–ËÅΩπ—]ï•ù°–πŸÿÿ¿¿§§∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ§∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ§∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅçΩπÕ–ÅM•Èïë	Ω‡°›•ë—†ËÅM¡Öç¶gScale.s12),
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 8,
+                      color: textPrimary,
+                    ),
+                    decoration: InputDecoration(
+                      counterText: '',
+                      hintText: '------',
+                      filled: true,
+                      fillColor: isDark ? const Color(0xFF0F172A) : Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: AppRadius.brLg,
+                        borderSide: BorderSide(color: borderColor),
+                      ),
+                      focusedBorder: const OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(12)),
+                        borderSide: BorderSide(color: AppColors.volt, width: 2),
+                      ),
+                    ),
+                  ),
+                  if (errorText != null) ...[
+                    const SizedBox(height: SpacingScale.s8),
+                    Text(
+                      errorText!,
+                      style: const TextStyle(fontSize: 12, color: AppColors.danger, fontWeight: FontWeight.w600),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                  const SizedBox(height: SpacingScale.s24),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.of(dialogCtx).pop(false),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            side: BorderSide(color: borderColor),
+                            shape: RoundedRectangleBorder(borderRadius: AppRadius.brLg),
+                          ),
+                          child: Text('Cancel', style: TextStyle(color: textPrimary, fontWeight: FontWeight.w600)),
+                        ),
+                      ),
+                      const SizedBox(width: SpacingScale.s12),
                       Expanded(
                         child: ElevatedButton(
                           onPressed: () {
@@ -290,16 +327,15 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> {
     );
 
     if (verified == true && mounted) {
-      // Step 2: Directly open mandatory routine progress form modal for final completion
       await _openProgressForm(isFinalCompletion: true);
     }
   }
 
-   void _openReviewModal() async {
-    if (_sessiogData == null) return;
+  void _openReviewModal() async {
+    if (_sessionData == null) return;
     final coachId = _sessionData!['coachId'] as String? ?? '';
     final coachName = _sessionData!['coachName'] as String? ?? 'Coach';
-    final playerId = _sessiogData!['playerId'] as String? ?? '';
+    final playerId = _sessionData!['playerId'] as String? ?? '';
     final playerName = _sessionData!['playerName'] as String? ?? 'Athlete';
 
     final reviewed = await ReviewCoachModal.show(
@@ -365,7 +401,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> {
         title: Text(
           'Cancel Session',
           style: AppTextStyles.title2.copyWith(
-            gontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w700,
             color: Theme.of(context).brightness == Brightness.dark ? AppColors.textPrimary : AppColors.lightTextPrimary,
           ),
         ),
@@ -382,7 +418,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> {
             onPressed: () => Navigator.pop(ctx),
             child: Text('Keep Session', style: AppTextStyles.button),
           ),
-          TextButtom(
+          TextButton(
             onPressed: () async {
               Navigator.pop(ctx);
               try {
@@ -408,7 +444,8 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> {
     );
   }
 
-   @override
+
+  @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = isDark ? AppColors.background : AppColors.lightBackground;
@@ -456,75 +493,248 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> {
     }
 
     final data = _sessionData!;
-    final dateTime = (data['tateTime'] as Timestamp?)?.toDate();
+    final dateTime = (data['dateTime'] as Timestamp?)?.toDate();
     final status = data['status'] as String? ?? 'booked';
     final sport = data['sport'] as String? ?? 'Athletics & Training';
-    final playerId = data[	¡±ÖÂï…%êùtÅÖÃÅM—…•πú¸Ä¸¸ÄúúÏ(ÄÄÄÅô•πÖ∞Å¡±ÖÂï…9ÖµîÄÙÅëÖ—Öl'∆ñW$Ê÷Ru“27G&ñÊsÚÛÚtFÜ∆WFRs∞¢fñÊ¬6ˆ6ÑñB“FF∞ñ6ˆ6ÑñBu“27G&ñÊsÚÛÚrs∞¢fñÊ¬6ˆ6ÑÊ÷R“FF≤v6ˆ6ÑÊ÷Ru“27G&ñÊsÚÛÚt6ˆ6Çs∞¢fñÊ¬VñB“&VbÁvF6ÇÜWFÖ7FFU&˜fñFW"íÊ4FFÚÁf«VSÚÁVñC∞¢fñÊ¬ó46ˆ6Ç“VñB“ÁV∆¬bbVñB”“6ˆ6ÑñC∞¢fñÊ¬ó5∆ñW"“VñB“ÁV∆¬bbáVñB”“∆ñW$ñB«¬VñB”“FF∞ñ&ˆˆ∂VD'íu“ì∞¢fñÊ¬ó5'Fñ6óÁB“ó46ˆ6Ç«¬ó5∆ñW#∞¢fñÊ¬÷˜VÁB“ÜFF≤v÷˜VÁBu“2ÁV”ÚìÚÁFÙF˜V&∆RÇíÛÚ∞¢fñÊ¬Ê˜FW2“FF≤vÊ˜FW2u“27G&ñÊsÚÛÚrs∞¢fñÊ¬F˜Fƒv&FVEá“ÜFF≤wF˜F≈6W76ñˆÂáv&FVBu“2ÁV”ÚìÚÁFÙñÁBÇíÛÚ∞¢fñÊ¬Ü5&WfñWvVB“FF≤vÜ5&WfñWvVBu“2&ˆˆ√ÚÛÚf«6S∞†¢6ˆ∆˜"7FGW46ˆ∆˜#∞¢7G&ñÊr7FGW4∆&V√∞¢7vóF6Çá7FGW2í∞¢66Rv6ˆ◊∆WFVBs†¢7FGW46ˆ∆˜"“6ˆ∆˜'2ÊV÷W&∆C∞¢7FGW4∆&V¬“t6ˆ◊∆WFVBs∞¢66Rv6Ê6V∆∆VBs†¢7FGW46ˆ∆˜"“6ˆ∆˜'2ÊFÊvW#∞¢7FGW4∆&V¬“t6Ê6V∆∆VBs∞¢66Rw&V¶V7FVBs†¢7FGW46ˆ∆˜"“6ˆ∆˜'2ÊFÊvW#∞¢7FGW4∆&V¬“tFV6∆ñÊVBs∞¢66Rv6ˆÊfó&÷VBs†¢7FGW46ˆ∆˜"“6ˆ∆˜'2Á&ñ÷'ì∞¢7FGW4∆&V¬“t6ˆÊfó&÷VBs∞¢66Rv6ÜV6∂VEˆñ‚s†¢66RvñÂ˜&ˆw&W72s†¢7FGW46ˆ∆˜"“6ˆ∆˜'2Áfˆ«C∞¢7FGW4∆&V¬“tñ‚G&ñÊñÊrs∞¢66Rv&ˆˆ∂VBs†¢66RwVÊFñÊrs†¢7FGW46ˆ∆˜"“6ˆ∆˜'2Áv&ÊñÊs∞¢7FGW4∆&V¬“tvóFñÊr6ˆ6Ç6ˆÊfó&÷Fñˆ‚s∞¢66Rw66ÜVGV∆VBs†¢7FGW46ˆ∆˜"“6ˆ∆˜'2Á&ñ÷'ì∞¢7FGW4∆&V¬“u66ÜVGV∆VBs∞¢FVfV«C†¢7FGW46ˆ∆˜"“6ˆ∆˜'2Áv&ÊñÊs∞¢7FGW4∆&V¬“u7FGW2VÊfñ∆&∆Rs∞¢–†¢&WGW&‚66ffˆ∆BÄ¢&6∂w&˜VÊD6ˆ∆˜#¢&t6ˆ∆˜"¿¢&#¢&"Ä¢&6∂w&˜VÊD6ˆ∆˜#¢ó4F&≤Ú6ˆ∆˜'2Á7W&f6R¢6ˆ∆˜'2Ê∆ñváE7W&f6R¿¢V∆WfFñˆ„¢¿¢FóF∆S¢FWáBÄ¢u6W76ñˆ‚FWFñ«2r¿¢7Gñ∆S¢FWáE7Gñ∆W2ÁFóF∆S"Ê6˜ïvóFÇÄ¢fˆÁEvVñváC¢fˆÁEvVñváBÁss¿¢6ˆ∆˜#¢FWáE&ñ÷'í¿¢í¿¢í¿¢í¿¢&ˆGì¢6VÁFW"Ä¢6Üñ∆C¢6ˆÁ7G&ñÊVD&˜ÇÄ¢6ˆÁ7G&ñÁG3¢6ˆÁ7B&˜Ñ6ˆÁ7G&ñÁG2Ü÷ÖvñGFÉ¢s#í¿¢6Üñ∆C¢7W7Fˆ’67&ˆ∆≈fñWrÄ¢6∆ófW'3¢∞¢6∆ófW%FÙ&˜ÑFFW"Ä¢6Üñ∆C¢FFñÊrÄ¢FFñÊs¢6ˆÁ7BVFvTñÁ6WG2Ê∆¬Ö76ñÊu66∆RÁ3bí¿¢6Üñ∆C¢6ˆ«V÷‚Ä¢7&˜74Üó4∆ñvÊ÷VÁC¢7&˜74Üó4∆ñvÊ÷VÁBÁ7F'B¿¢6Üñ∆G&V„¢∞¢ÚÚ7FGW2&ÊÊW ¢6ˆÁFñÊW"Ä¢vñGFÉ¢F˜V&∆RÊñÊfñÊóGí¿¢FFñÊs¢6ˆÁ7BVFvTñÁ6WG2Ê∆¬Ö76ñÊu66∆RÁ3#í¿¢FV6˜&Fñˆ„¢&˜ÑFV6˜&Fñˆ‚Ä¢w&FñVÁC¢∆ñÊV$w&FñVÁBÄ¢&Vvñ„¢∆ñvÊ÷VÁBÁF˜∆VgB¿¢VÊC¢∆ñvÊ÷VÁBÊ&˜GFˆ’&ñváB¿¢6ˆ∆˜'3¢∞¢7FGW46ˆ∆˜"¿¢7FGW46ˆ∆˜"ÁvóFÖf«VW2Ü«Ü¢„Çí¿¢“¿¢í¿¢&˜&FW%&FóW3¢&FóW2Ê'%Ü√2¿¢í¿¢6Üñ∆C¢6ˆ«V÷‚Ä¢7&˜74Üó4∆ñvÊ÷VÁC¢7&˜74Üó4∆ñvÊ÷VÁBÁ7F'B¿¢6Üñ∆G&V„¢∞¢&˜rÄ¢6Üñ∆G&V„¢∞¢6ˆÁFñÊW"Ä¢FFñÊs¢6ˆÁ7BVFvTñÁ6WG2Á7ñ÷÷WG&ñ2Ä¢Ü˜&ó¶ˆÁF√¢76ñÊu66∆RÁ3"¿¢fW'Fñ6√¢76ñÊu66∆RÁ3B¿¢í¿¢FV6˜&Fñˆ„¢&˜ÑFV6˜&Fñˆ‚Ä¢6ˆ∆˜#¢á7FGW2”“v6ÜV6∂VEˆñ‚r«¬7FGW2”“vñÂ˜&ˆw&W72rê¢Ú6ˆ∆˜'2Ê&∆6≤ÁvóFÖf«VW2Ü«Ü¢„2ê¢¢6ˆ∆˜'2ÁvÜóFRÁvóFÖf«VW2Ü«Ü¢„"í¿¢&˜&FW%&FóW3¢&FóW2Ê'$gV∆¬¿¢í¿¢6Üñ∆C¢FWáBÄ¢7FGW4∆&V¬¿¢7Gñ∆S¢FWáE7Gñ∆W2Ê∆&V≈6“Ê6˜ïvóFÇÄ¢6ˆ∆˜#¢á7FGW2”“v6ÜV6∂VEˆñ‚r«¬7FGW2”“vñÂ˜&ˆw&W72rê¢Ú6ˆ∆˜'2Ê&∆6∞¢¢6ˆ∆˜'2ÁvÜóFR¿¢fˆÁEvVñváC¢fˆÁEvVñváBÁsÉ¿¢í¿¢í¿¢í¿†                       if (totalAwardedXp > 0) ...[
-                                const SizedBox(width: SpacingScale.s8),
+    final playerId = data['playerId'] as String? ?? '';
+    final playerName = data['playerName'] as String? ?? 'Athlete';
+    final coachId = data['coachId'] as String? ?? '';
+    final uid = ref.watch(authStateProvider).asData?.value?.uid;
+    final isCoach = uid != null && uid == coachId;
+    final isPlayer = uid != null && (uid == playerId || uid == data['bookedBy']);
+    final isParticipant = isCoach || isPlayer;
+    final amount = (data['amount'] as num?)?.toDouble() ?? 0;
+    final notes = data['notes'] as String? ?? '';
+    final totalAwardedXp = (data['totalSessionXpAwarded'] as num?)?.toInt() ?? 0;
+    final hasReviewed = data['hasReviewed'] as bool? ?? false;
+
+    Color statusColor;
+    String statusLabel;
+    switch (status) {
+      case 'completed':
+        statusColor = AppColors.emerald;
+        statusLabel = 'Completed';
+      case 'cancelled':
+        statusColor = AppColors.danger;
+        statusLabel = 'Cancelled';
+      case 'rejected':
+        statusColor = AppColors.danger;
+        statusLabel = 'Declined';
+      case 'confirmed':
+        statusColor = AppColors.primary;
+        statusLabel = 'Confirmed';
+      case 'checked_in':
+      case 'in_progress':
+        statusColor = AppColors.volt;
+        statusLabel = 'In Training';
+      case 'booked':
+      case 'pending':
+        statusColor = AppColors.warning;
+        statusLabel = 'Awaiting coach confirmation';
+      case 'scheduled':
+        statusColor = AppColors.primary;
+        statusLabel = 'Scheduled';
+      default:
+        statusColor = AppColors.warning;
+        statusLabel = 'Status unavailable';
+    }
+
+    return Scaffold(
+      backgroundColor: bgColor,
+      appBar: AppBar(
+        backgroundColor: isDark ? AppColors.surface : AppColors.lightSurface,
+        elevation: 0,
+        title: Text(
+          'Session Details',
+          style: AppTextStyles.title2.copyWith(
+            fontWeight: FontWeight.w700,
+            color: textPrimary,
+          ),
+        ),
+      ),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 720),
+          child: CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(SpacingScale.s16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(SpacingScale.s20),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              statusColor,
+                              statusColor.withValues(alpha: 0.8),
+                            ],
+                          ),
+                          borderRadius: AppRadius.brXl3,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
                                 Container(
                                   padding: const EdgeInsets.symmetric(
-                                    horizontal: SpacingScale.s10,
+                                    horizontal: SpacingScale.s12,
                                     vertical: SpacingScale.s4,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: Colors.black.withValues(alpha: 0.25),
+                                    color: (status == 'checked_in' || status == 'in_progress')
+                                        ? Colors.black.withValues(alpha: 0.3)
+                                        : Colors.white.withValues(alpha: 0.2),
                                     borderRadius: AppRadius.brFull,
                                   ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      const Icon(Icons.bolt_rounded, size: 14, color: AppColors.volt),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        '+$totalAwardedXp KRICO XP',
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.w800,
-                                          fontSize: 11,
-                                        ),
-                                      ),
-                                    ],
+                                  child: Text(
+                                    statusLabel,
+                                    style: AppTextStyles.labelSm.copyWith(
+                                      color: (status == 'checked_in' || status == 'in_progress')
+                                          ? Colors.black
+                                          : Colors.white,
+                                      fontWeight: FontWeight.w800,
+                                    ),
                                   ),
                                 ),
+                                if (totalAwardedXp > 0) ...[
+                                  const SizedBox(width: SpacingScale.s8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: SpacingScale.s10,
+                                      vertical: SpacingScale.s4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.black.withValues(alpha: 0.25),
+                                      borderRadius: AppRadius.brFull,
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(Icons.bolt_rounded, size: 14, color: AppColors.volt),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          '+$totalAwardedXp KRICO XP',
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w800,
+                                            fontSize: 11,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                               ],
+                            ),
+                            const SizedBox(height: SpacingScale.s16),
+                            Text(
+                              sport,
+                              style: AppTextStyles.heading2.copyWith(
+                                color: (status == 'checked_in' || status == 'in_progress')
+                                    ? Colors.black
+                                    : Colors.white,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            const SizedBox(height: SpacingScale.s8),
+                            if (dateTime != null) ...[
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.calendar_today_rounded,
+                                    size: 16,
+                                    color: (status == 'checked_in' || status == 'in_progress')
+                                        ? Colors.black87
+                                        : Colors.white70,
+                                  ),
+                                  const SizedBox(width: SpacingScale.s8),
+                                  Text(
+                                    DateFormat('EEEE, MMMM d, yyyy').format(dateTime),
+                                    style: AppTextStyles.body.copyWith(
+                                      color: (status == 'checked_in' || status == 'in_progress')
+                                          ? Colors.black87
+                                          : Colors.white70,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: SpacingScale.s4),
+                              Row(
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(4),
+                                    child: Image.asset(
+                                      'assets/animations/stopwatch.gif',
+                                      width: 16,
+                                      height: 16,
+                                      fit: BoxFit.contain,
+                                      errorBuilder: (context, error, stackTrace) => Icon(
+                                        Icons.access_time_rounded,
+                                        size: 16,
+                                        color: (status == 'checked_in' || status == 'in_progress')
+                                            ? Colors.black87
+                                            : Colors.white70,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: SpacingScale.s8),
+                                  Text(
+                                    DateFormat('hh:mm a').format(dateTime),
+                                    style: AppTextStyles.body.copyWith(
+                                      color: (status == 'checked_in' || status == 'in_progress')
+                                          ? Colors.black87
+                                          : Colors.white70,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ],
-                          ),
-                          const SizedBox(height: SpacingScale.s16),
-                          Text(
-                            sport,
-                            style: AppTextStyles.heading2.copyWith(
-                              color: (status == 'checked_in' || status == 'in_progress')
-                                  ? Colors.black
-                                  : Colors.white,
-                              fontWeight: FontWeight.w9 ¿∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ§∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ§∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅçΩπÕ–ÅM•Èïë	Ω‡°°ï•ù°–ËÅM¡Öç•πùMçÖ±îπÃ‡§∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅ•òÄ°ëÖ—ïQ•µîÄÑÙÅπ’±∞§Ä∏∏πl(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅIΩ‹†(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅç°•±ë…ï∏ËÅl(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅ%çΩ∏†(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅ%çΩπÃπçÖ±ïπëÖ…}—ΩëÖÂ}…Ω’πëïê∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅÕ•ÈîËÄƒÿ∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅçΩ±Ω»ËÄ°Õ—Ö—’ÃÄÙÙÄùç°ïç≠ïë}•∏úÅÒÅÕ—Ö—’ÃÄÙÙÄù•π}¡…Ωù…ïÕÃú§(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¸ÅΩ±Ω…Ãπâ±Öç¨‡‹(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄËÅΩ±Ω…Ãπ›°•—î‹¿∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ§∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅçΩπÕ–ÅM•Èïë	Ω‡°›•ë—†ËÅM¡Öç•πùMçÖ±îπÃ‡§∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅQï·–†(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅÖ—ïΩ…µÖ–†ù∞Å5554Åê∞ÅÂÂÂ‰ú§πôΩ…µÖ–°ëÖ—ïQ•µî§∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅÕ—Â±îËÅ¡¡Qï·—M—Â±ïÃπâΩë‰πçΩ¡Â]•—††(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅçΩ±Ω»ËÄ°Õ—Ö—’ÃÄÙÙÄùç°ïç≠ïë}•∏úÅÒÅÕ—Ö—’ÃÄÙÙÄù•π}¡…Ωù…ïÕÃú§(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¸ÅΩ±Ω…Ãπâ±Öç¨‡‹(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄËÅΩ±Ω…Ãπ›°•—î‹¿∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ§∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ§∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅt∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ§∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅçΩπÕ–ÅM•Èïë	Ω‡°°ï•ù°–ËÅM¡Öç•πùMçÖ±îπÃ–§∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅIΩ‹†(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅç°•±ë…ï∏ËÅl(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅ±•¡AIïç–†(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅâΩ…ëï…IÖë•’ÃËÅ	Ω…ëï…IÖë•’Ãπç•…ç’±Ö»†–§∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅç°•±êËÅ%µÖùîπÖÕÕï–†(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄùÖÕÕï—ÃΩÖπ•µÖ—•ΩπÃΩÕ—Ω¡›Ö—ç†πù•òú∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅ›•ë—†ËÄƒÿ∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅ°ï•ù°–ËÄƒÿ∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅô•–ËÅ	Ω·•–πçΩπ—Ö•∏∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅï……Ω…	’•±ëï»ËÄ°çΩπ—ï·–∞Åï……Ω»∞ÅÕ—Öç≠Q…Öçî§ÄÙ¯Å%çΩ∏†(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅ%çΩπÃπÖççïÕÕ}—•µï}…Ω’πëïê∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅÕ•ÈîËÄƒÿ∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅçΩ±Ω»ËÄ°Õ—Ö—’ÃÄÙÙÄùç°ïç≠ïë}•∏úÅÒÅÕ—Ö—’ÃÄÙÙÄù•π}¡…Ωù…ïÕÃú§(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¸ÅΩ±Ω…Ãπâ±Öç¨‡‹(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄËÅΩ±Ω…Ãπ›°•—î‹¿∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ§∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ§∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ§∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅçΩπÕ–ÅM•Èïë	Ω‡°›•ë—†ËÅM¡Öç•πùMçÖ±îπÃ‡§∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅQï·–†(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅÖ—ïΩ…µÖ–†ù°†Èµ¥ÅÑú§πôΩ…µÖ–°ëÖ—ïQ•µî§∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅÕ—Â±îËÅ¡¡Qï·—M—Â±ïÃπâΩë‰πçΩ¡Â]•—††(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅçΩ±Ω»ËÄ°Õ—Ö—’ÃÄÙÙÄùç°ïç≠ïë}•∏úÅÒÅÕ—Ö—’ÃÄÙÙÄù•π}¡…Ωù…ïÕÃú§(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¸ÅΩ±Ω…Ãπâ±Öç¨‡‹(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄËÅΩ±Ω…Ãπ›°•—î‹¿∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ§∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ§∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅt∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ§∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅt∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅ•òÄ°ÖµΩ’π–Ä¯Ä¿§Ä∏∏πl(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅçΩπÕ–ÅM•Èïë	Ω‡°°ï•ù°–ËÅM¡Öç•πùMçÖ±îπÃƒ»§∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅQï·–†(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄüä
-ÁëÌÖµΩ’π–π—Ω%π–†•Ùú∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅÕ—Â±îËÅ¡¡Qï·—M—Â±ïÃπ°ïÖë•πú»πçΩ¡Â]•—††(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅçΩ±Ω»ËÄ°Õ—Ö—’ÃÄÙÙÄùç°ïç≠ïë}•∏úÅÒÅÕ—Ö—’ÃÄÙÙÄù•π}¡…Ωù…ïÕÃú§(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¸ÅΩ±Ω…Ãπâ±Öç¨(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄËÅΩ±Ω…Ãπ›°•—î∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅôΩπ—]ï•ù°–ËÅΩπ—]ï•ù°–π‹‡¿¿∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ§∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ§∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅt∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅt∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ§∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ§∞(                      // ATHLETE CHECK-IN PIN CARD (When not yet checked in)
+                            if (amount > 0) ...[
+                              const SizedBox(height: SpacingScale.s12),
+                              Text(
+                                '?${amount.toInt()}',
+                                style: AppTextStyles.heading2.copyWith(
+                                  color: (status == 'checked_in' || status == 'in_progress')
+                                      ? Colors.black
+                                      : Colors.white,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+
+
                       if (isPlayer && (status == 'confirmed' || status == 'booked' || status == 'scheduled')) ...[
                         const SizedBox(height: SpacingScale.s20),
                         _buildAthleteCheckInCard(isDark, textPrimary, textSecondary),
                       ],
 
-                      // ATHLETE CHECKOUT OTP CARD (When training is active)
                       if (isPlayer && (status == 'checked_in' || status == 'in_progress')) ...[
                         const SizedBox(height: SpacingScale.s20),
-                        _buildAthleteCheckoutCard(isDark , textPrimary, textSecondary),
+                        _buildAthleteCheckoutCard(isDark, textPrimary, textSecondary),
                       ],
 
-                      // COACH ACTIVE TRAINING CONTROL CARD
                       if (isCoach && (status == 'checked_in' || status == 'in_progress')) ...[
                         const SizedBox(height: SpacingScale.s20),
                         _buildCoachTrainingControlCard(isDark, textPrimary, textSecondary),
                       ],
 
-                      // ATTENDANCE DETAILS
                       ..._attendanceBlocks(data, isDark, textSecondary, textPrimary),
 
-                      // COMPLETED TRAINING VERIFICATION BREAKDOWN
                       if (status == 'completed') ...[
                         const SizedBox(height: SpacingScale.s20),
                         _buildCompletedCurriculumCard(data, isDark, textPrimary, textSecondary),
                       ],
 
-                      // PLAYER CARD
                       if (playerId.isNotEmpty) ...[
                         const SizedBox(height: SpacingScale.s20),
                         Text(
@@ -542,7 +752,6 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> {
                         ),
                       ],
 
-                      // COACH CARD
                       if (coachId.isNotEmpty) ...[
                         const SizedBox(height: SpacingScale.s20),
                         Text(
@@ -560,7 +769,6 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> {
                         ),
                       ],
 
-                      // NOTES
                       if (notes.isNotEmpty) ...[
                         const SizedBox(height: SpacingScale.s20),
                         Text(
@@ -576,7 +784,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> {
                           padding: const EdgeInsets.all(SpacingScale.s16),
                           decoration: BoxDecoration(
                             color: isDark ? AppColors.card : AppColors.lightCard,
-                            borderRadius: AppRadius.brGl2,
+                            borderRadius: AppRadius.brXl2,
                             border: Border.all(
                               color: (isDark ? AppColors.border : AppColors.lightBorder).withValues(alpha: 0.5),
                             ),
@@ -593,7 +801,6 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> {
 
                       const SizedBox(height: SpacingScale.s24),
 
-                      // ACTIONS SECTION
                       if (isParticipant) ...[
                         Text(
                           'Actions',
@@ -604,15 +811,14 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> {
                         ),
                         const SizedBox(height: SpacingScale.s12),
 
-                        // Completed State Actions
                         if (status == 'completed') ...[
                           if (isPlayer) ...[
                             if (!hasReviewed) ...[
                               PrimaryButton(
                                 label: 'Rate & Review Coach',
-                               icon: Icons.star_rate_rounded,
-                               onPressed: _openReviewModal,
-                               expanded: true,
+                                icon: Icons.star_rate_rounded,
+                                onPressed: _openReviewModal,
+                                expanded: true,
                               ),
                               const SizedBox(height: SpacingScale.s8),
                             ],
@@ -632,7 +838,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> {
                             ),
                           ],
                         ],
-                      // Coach Before Check-In Actions
+
                         if (isCoach && (status == 'confirmed' || status == 'booked' || status == 'scheduled')) ...[
                           PrimaryButton(
                             label: 'Enter Athlete Check-In OTP',
@@ -673,8 +879,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> {
                           ),
                         ],
 
-                      // Player Before Check-In Actions
-                      if (isPlayer && (status == 'confirmed' || status == 'booked' || status == 'scheduled')) ...[
+                        if (isPlayer && (status == 'confirmed' || status == 'booked' || status == 'scheduled')) ...[
                           PrimaryButton(
                             label: 'Scan Attendance QR',
                             icon: Icons.qr_code_scanner_rounded,
@@ -707,40 +912,39 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> {
                           ),
                         ],
 
-                      // Coach Reschedule & Cancel
-                      if (isCoach && (status == 'confirmed' || status == 'booked' || status == 'pending')) ...[
-                        const SizedBox(height: SpacingScale.s8),
-                        PrimaryButton(
-                          label: 'Reschedule',
-                          icon: Icons.date_range_rounded,
-                          onPressed: _rescheduleSession,
-                          expanded: true,
-                        ),
+                        if (isCoach && (status == 'confirmed' || status == 'booked' || status == 'pending')) ...[
+                          const SizedBox(height: SpacingScale.s8),
+                          PrimaryButton(
+                            label: 'Reschedule',
+                            icon: Icons.date_range_rounded,
+                            onPressed: _rescheduleSession,
+                            expanded: true,
+                          ),
+                        ],
+                        if (status == 'confirmed' || status == 'booked' || status == 'pending') ...[
+                          const SizedBox(height: SpacingScale.s8),
+                          OutlineButton(
+                            label: 'Cancel Session',
+                            icon: Icons.cancel_rounded,
+                            color: AppColors.dangerLight,
+                            onPressed: () => _confirmCancel(context),
+                            expanded: true,
+                          ),
+                        ],
+                        if (status == 'cancelled' && isPlayer) ...[
+                          PrimaryButton(
+                            label: 'Book Another Coach',
+                            icon: Icons.search_rounded,
+                            onPressed: () => context.push('/coach-discovery'),
+                            expanded: true,
+                          ),
+                        ],
                       ],
-                      if (status == 'confirmed' || status == 'booked' || status == 'pending') ...[
-                        const SizedBox(height: SpacingScale.s8),
-                        OutlineButton(
-                          label: 'Cancel Session',
-                          icon: Icons.cancel_rounded,
-                          color: AppColors.dangerLight,
-                          onPressed: () => _confirmCancel(context),
-                          expanded: true,
-                        ),
-                      ],
-                      if (status == 'cancelled' && isPlayer) ...[
-                        PrimaryButton(
-                          label: 'Book Another Coach',
-                          icon: Icons.search_rounded,
-                          onPressed: () => context.push('/coach-discovery'),
-                          expanded: true,
-                        ),
-                      ],
+                      const SizedBox(height: SpacingScale.s32),
                     ],
-                    const SizedBox(height: SpacingScale.s32),
-                  ],
+                  ),
                 ),
               ),
-              ],
             ],
           ),
         ),
@@ -748,15 +952,14 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> {
     );
   }
 
-   // ATHLETE CHECK-IN PIN CARD
+
   Widget _buildAthleteCheckInCard(bool isDark, Color textPrimary, Color textSecondary) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(SpacingScale.s16),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0x
-F131826) : const Color(0xFEFFF6FF),
-        borderRadius: AppRadius.brGl2,
+        color: isDark ? const Color(0xFF131826) : const Color(0xFFEFF6FF),
+        borderRadius: AppRadius.brXl2,
         border: Border.all(color: AppColors.primary.withValues(alpha: 0.35)),
       ),
       child: Column(
@@ -770,7 +973,7 @@ F131826) : const Color(0xFEFFF6FF),
                 'Your Check-In Attendance PIN',
                 style: AppTextStyles.title3.copyWith(
                   color: textPrimary,
-                  gontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ],
@@ -800,7 +1003,7 @@ F131826) : const Color(0xFEFFF6FF),
                     color: AppColors.primary,
                   ),
                 ),
-                IconButtom(
+                IconButton(
                   icon: const Icon(Icons.copy_rounded, size: 20, color: AppColors.primary),
                   tooltip: 'Copy PIN',
                   onPressed: () {
@@ -818,7 +1021,6 @@ F131826) : const Color(0xFEFFF6FF),
     );
   }
 
-   // ATHLETE CHECKOUT OTP CARD
   Widget _buildAthleteCheckoutCard(bool isDark, Color textPrimary, Color textSecondary) {
     return Container(
       width: double.infinity,
@@ -855,7 +1057,7 @@ F131826) : const Color(0xFEFFF6FF),
                       'Session Checkout OTP',
                       style: AppTextStyles.title3.copyWith(
                         color: textPrimary,
-                        gontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
                     Text(
@@ -898,9 +1100,7 @@ F131826) : const Color(0xFEFFF6FF),
                   onPressed: () {
                     Clipboard.setData(ClipboardData(text: _checkoutOtp));
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Checkout OTP copied to clipboard!'),
-                      ),
+                      const SnackBar(content: Text('Checkout OTP copied to clipboard!')),
                     );
                   },
                 ),
@@ -912,14 +1112,12 @@ F131826) : const Color(0xFEFFF6FF),
     );
   }
 
-   // COACH ACTIVE TRAINING CONTROL CARD
   Widget _buildCoachTrainingControlCard(bool isDark, Color textPrimary, Color textSecondary) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(SpacingScale.s16),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0x
-F1A1F36) : const Color(0xFF8FAFC),
+        color: isDark ? const Color(0xFF1A1F36) : const Color(0xFFF8FAFC),
         borderRadius: AppRadius.brXl2,
         border: Border.all(color: AppColors.volt.withValues(alpha: 0.4)),
       ),
@@ -941,14 +1139,57 @@ F1A1F36) : const Color(0xFF8FAFC),
                 'Training In Progress',
                 style: AppTextStyles.title3.copyWith(
                   color: textPrimary,
-                  fontWeight: FontWeight.w8 ¿∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ§∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄ§∞(ÄÄÄÄÄÄÄÄÄÄÄÅt∞(ÄÄÄÄÄÄÄÄÄÄ§∞(ÄÄÄÄÄÄÄÄÄÅçΩπÕ–ÅM•Èïë	Ω‡°°ï•ù°–ËÅM¡Öç•πùMçÖ±îπÃ‡§∞(ÄÄÄÄÄÄÄÄÄÅQï·–†(ÄÄÄÄÄÄÄÄÄÄÄÄùIïçΩ…êÅÕ’àµ…Ω’—•πîÅ¡…Ωù…ïÕÃÅ•πç…ïµïπ—Ö±±‰Å—°…Ω’ù°Ω’–Å—°îÅÕïÕÕ•Ω∏∏Å]°ï∏Åô•π•Õ°ïê∞Å—Ö¿Å°ïç≠Ω’–ÄòÅπ—ï»Å=Q@Å—ºÅŸï…•ô‰ÅÖπêÅÖ›Ö…êÅ-I%<Åa@∏ú∞(ÄÄÄÄÄÄÄÄÄÄÄÅÕ—Â±îËÅQï·—M—Â±î°ôΩπ—M•ÈîËÄƒÃ∞ÅçΩ±Ω»ËÅ—ï·—MïçΩπëÖ…‰∞Å°ï•ù°–ËÄƒ∏–§∞(ÄÄÄÄÄÄÄÄÄÄ§∞(ÄÄÄÄÄÄÄÄÄÅçΩπÕ–ÅM•Èïë	Ω‡°°ï•ù°–ËÅM¡Öç•πùMçÖ±îπÃƒÿ§∞(ÄÄÄÄÄÄÄÄÄÄººÅMÖŸîÄºÅU¡ëÖ—îÅA…Ωù…ïÕÃÅâ’——Ω∏(ÄÄÄÄÄÄÄÄÄÅ=’—±•πïë	’——Ω∏π•çΩ∏†(ÄÄÄÄÄÄÄÄÄÄÄÅΩπA…ïÕÕïêËÄ†§ÄÙ¯Å}Ω¡ïπA…Ωù…ïÕÕΩ…¥°•Õ•πÖ±Ωµ¡±ï—•Ω∏ËÅôÖ±Õî§∞(ÄÄÄÄÄÄÄÄÄÄÄÅ•çΩ∏ËÅçΩπÕ–Å%çΩ∏°%çΩπÃπ¡±ÖÂ±•Õ—}Öëë}ç°ïç≠}…Ω’πëïê∞ÅçΩ±Ω»ËÅ¡¡Ω±Ω…ÃπŸΩ±–§∞(ÄÄÄÄÄÄÄÄÄÄÄÅ±Öâï∞ËÅçΩπÕ–ÅQï·–†(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄùMÖŸîÄºÅU¡ëÖ—îÅQ…Ö•π•πúÅA…Ωù…ïÕÃú∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÅÕ—Â±îËÅQï·—M—Â±î°ùΩπ—]ï•ù°–ËÅΩπ—]ï•ù°–π‹‹¿¿∞ÅçΩ±Ω»ËÅ¡¡Ω±Ω…ÃπŸΩ±–§∞(ÄÄÄÄÄÄÄÄÄÄÄÄ§∞(ÄÄÄÄÄÄÄÄÄÄÄÅÕ—Â±îËÅ=’—±•πïë	’——Ω∏πÕ—Â±ï…Ω¥†(ÄÄÄÄÄÄÄÄÄÄÄÄÄÅµ•π•µ’µM•ÈîËÅçΩπÕ–ÅM•Èî°ëΩ’â±îπ•πô•π•—‰∞Ä–‡§∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÅÕ•ëîËÅçΩπÕ–Å	Ω…ëï…M•ëî°çΩ±Ω»ËÅ¡¡Ω±Ω…ÃπŸΩ±–∞Å›•ë—†ËÄƒ∏‘§∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÅÕ°Ö¡îËÅIΩ’πëïëIïç—Öπù±ï	Ω…ëï»°âΩ…ëï…IÖë•’ÃËÅ¡¡IÖë•’Ãπâ…1ú§∞(ÄÄÄÄÄÄÄÄÄÄÄÄ§∞(ÄÄÄÄÄÄÄÄÄÄ§∞(ÄÄÄÄÄÄÄÄÄÅçΩπÕ–ÅM•Èïë	Ω‡°°ï•ù°–ËÅM¡Öç•πùMçÖ±îπÃƒ¿§∞(ÄÄÄÄÄÄÄÄÄÄººÅ°ïç≠Ω’–ÄòÅΩµ¡±ï—îÅ	’——Ω∏(ÄÄÄÄÄÄÄÄÄÅ±ïŸÖ—ïë	’——Ω∏π•çΩ∏†(ÄÄÄÄÄÄÄÄÄÄÄÅΩπA…ïÕÕïêËÅ}Õ°Ω›ΩÖç°°ïç≠Ω’—=—¡•Ö±Ωú∞(ÄÄÄÄÄÄÄÄÄÄÄÅ•çΩ∏ËÅçΩπÕ–Å%çΩ∏°%çΩπÃπç°ïç≠}ç•…ç±ï}Ω’—±•πï}…Ω’πëïê∞ÅçΩ±Ω»ËÅΩ±Ω…Ãπâ±Öç¨§∞(ÄÄÄÄÄÄÄÄÄÄÄÅ±Öâï∞ËÅçΩπÕ–ÅQï·–†(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄù°ïç≠Ω’–ÄòÅπ—ï»Å—°±ï—îÅ=Q@ú∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÅÕ—Â±îËÅQï·—M—Â±î°ôΩπ—]ï•ù°–ËÅΩπ—]ï•ù°–π‹‡¿¿∞ÅçΩ±Ω»ËÅΩ±Ω…Ãπâ±Öç¨§∞(ÄÄÄÄÄÄÄÄÄÄÄÄ§∞(ÄÄÄÄÄÄÄÄÄÄÄÅÕ—Â±îËÅ±ïŸÖ—ïë	’——Ω∏πÕ—Â±ï…Ω¥†(ÄÄÄÄÄÄÄÄÄÄÄÄÄÅµ•π•µ’µM•ÈîËÅçΩπÕ–ÅM•Èî°ëΩ’â±îπ•πô•π•—‰∞Ä–‡§∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÅâÖç≠ù…Ω’πëΩ±Ω»ËÅ¡¡Ω±Ω…ÃπŸΩ±–∞(ÄÄÄÄÄÄÄÄÄÄÄÄÄÅÕ°Ö¡îËÅIΩ’πëïëIïç—Öπù±ï	Ω…ëï»°âΩ…ëï…IÖë•’ÃËÅ¡¡IÖë•’Ãπâ…1ú§∞(ÄÄÄÄÄÄÄÄÄÄÄÄ§∞(ÄÄÄÄÄÄÄÄÄÄ§∞(ÄÄÄÄÄÄÄÅt∞(ÄÄÄÄÄÄ§∞(ÄÄÄÄ§Ï(ÄÅÙ((   // COMPLETED TRAINING VERIFICATION BREAKDOWN
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: SpacingScale.s8),
+          Text(
+            'Record sub-routine progress incrementally throughout the session. When finished, tap Checkout & Enter OTP to verify and award KRICO XP.',
+            style: TextStyle(fontSize: 13, color: textSecondary, height: 1.4),
+          ),
+          const SizedBox(height: SpacingScale.s16),
+          OutlinedButton.icon(
+            onPressed: () => _openProgressForm(isFinalCompletion: false),
+            icon: const Icon(Icons.playlist_add_check_rounded, color: AppColors.volt),
+            label: const Text(
+              'Save / Update Training Progress',
+              style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.volt),
+            ),
+            style: OutlinedButton.styleFrom(
+              minimumSize: const Size(double.infinity, 48),
+              side: const BorderSide(color: AppColors.volt, width: 1.5),
+              shape: RoundedRectangleBorder(borderRadius: AppRadius.brLg),
+            ),
+          ),
+          const SizedBox(height: SpacingScale.s10),
+          ElevatedButton.icon(
+            onPressed: _showCoachCheckoutOtpDialog,
+            icon: const Icon(Icons.check_circle_outline_rounded, color: Colors.black),
+            label: const Text(
+              'Checkout & Enter Athlete OTP',
+              style: TextStyle(fontWeight: FontWeight.w800, color: Colors.black),
+            ),
+            style: ElevatedButton.styleFrom(
+              minimumSize: const Size(double.infinity, 48),
+              backgroundColor: AppColors.volt,
+              shape: RoundedRectangleBorder(borderRadius: AppRadius.brLg),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+
   Widget _buildCompletedCurriculumCard(
     Map<String, dynamic> data,
     bool isDark,
     Color textPrimary,
     Color textSecondary,
   ) {
-    final progress = data['savedProgress'] as Map<String, dynamic>;
+    final progress = data['savedProgress'] as Map<String, dynamic>?;
     final totalXp = (data['totalSessionXpAwarded'] as num?)?.toInt() ?? 0;
     final coachNotes = progress?['coachNotes'] as String? ?? '';
     final completedSubIds = (progress?['completedSubRoutineIds'] as List<dynamic>?)?.cast<String>() ?? [];
@@ -977,6 +1218,7 @@ F1A1F36) : const Color(0xFF8FAFC),
                     color: textPrimary,
                   ),
                 ),
+              ),
               if (totalXp > 0)
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -999,7 +1241,7 @@ F1A1F36) : const Color(0xFF8FAFC),
           if (completedSubIds.isNotEmpty) ...[
             Text(
               'Completed Sub-Routines (${completedSubIds.length}):',
-              style: TextStyle(fontSize: 13, fontWeight: FontWeight.vv600, color: textSecondary),
+              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: textSecondary),
             ),
             const SizedBox(height: SpacingScale.s6),
             ...completedSubIds.map((subId) {
@@ -1035,8 +1277,7 @@ F1A1F36) : const Color(0xFF8FAFC),
             Container(
               padding: const EdgeInsets.all(SpacingScale.s10),
               decoration: BoxDecoration(
-                color: isDark ? const Color(0x
-F131826) : const Color(0xFFF1F5F9),
+                color: isDark ? const Color(0xFF131826) : const Color(0xFFF1F5F9),
                 borderRadius: AppRadius.brMd,
               ),
               child: Row(
@@ -1082,7 +1323,7 @@ F131826) : const Color(0xFFF1F5F9),
     if (status != 'checked_in' && status != 'in_progress' && status != 'completed') return const [];
     final checkedInAt = (data['checkedInAt'] as Timestamp?)?.toDate();
     if (checkedInAt == null) return const [];
-    final checkedOutAt = (data[	checkedOutAt'] as Timestamp?)?.toDate();
+    final checkedOutAt = (data['checkedOutAt'] as Timestamp?)?.toDate();
 
     return [
       const SizedBox(height: SpacingScale.s20),
@@ -1091,7 +1332,7 @@ F131826) : const Color(0xFFF1F5F9),
         style: AppTextStyles.title2.copyWith(
           fontWeight: FontWeight.w700,
           color: textPrimary,
-         ),
+        ),
       ),
       const SizedBox(height: SpacingScale.s8),
       Container(
@@ -1182,77 +1423,120 @@ class _PlayerInfoCard extends ConsumerWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(SpacingScale.s16),
       decoration: BoxDecoration(
-        color: isDaö»»\€€‹úÀòÿ\ôà\€€‹úÀõY⁄ÿ\ôàõ‹ô\îòY]\Œà\òY]\Àòúñãàõ‹ô\éàõ‹ô\ãò[
-€€‹éà
-\—\ö»»\€€‹úÀòõ‹ô\àà\€€‹úÀõY⁄õ‹ô\äKù⁄]ò[Y\ [NàçJJKà
-Kà⁄[àõ› à⁄[ô[éà¬àŸ\›\ôQ]X›‹äà€ï\à
+        color: isDark ? AppColors.card : AppColors.lightCard,
+        borderRadius: AppRadius.brXl2,
+        border: Border.all(color: (isDark ? AppColors.border : AppColors.lightBorder).withValues(alpha: 0.5)),
+      ),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () => context.push('/profile/$playerId'),
+            child: Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.12),
+                borderRadius: AppRadius.brFull,
+              ),
+              child: ClipRRect(
+                borderRadius: AppRadius.brFull,
+                child: Image.asset(
+                  'assets/avatars/athlete_1.jpg',
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Center(
+                    child: Text(
+                      player?.name.isNotEmpty == true ? player!.name[0].toUpperCase() : 'P',
+                      style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700, fontSize: 18),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: SpacingScale.s12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(player?.name ?? 'Player', style: AppTextStyles.title3.copyWith(fontWeight: FontWeight.w600, color: textPrimary)),
+                Text(player?.level ?? 'Athlete', style: AppTextStyles.caption.copyWith(color: textSecondary)),
+              ],
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.chat_bubble_outline_rounded, color: AppColors.primary, size: 20),
+            onPressed: () => context.push('/chat'),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
-HOà€€ù^ú\⁄
-	À‹õŸö[K…^Y\íY	 Kà⁄[à€€ùZ[ô\äà⁄YààZY⁄ààX€‹ò][€éàõﬁX€‹ò][€äà€€‹éà\€€‹úÀúö[X\ûKù⁄]ò[Y\ [NàåLäKàõ‹ô\îòY]\Œà\òY]\Àòúëù[à
-Kà⁄[à€\îôX›
-àõ‹ô\îòY]\Œà\òY]\Àòúëù[à⁄[à[XYŸKò\‹Ÿ]
-à	ÿ\‹Ÿ]Àÿ]ò]\úÀÿ]]WÃKöú…Ààö]àõﬁö]ò€›ô\ãà\úõ‹êùZ[\éà
-€€ù^\úõ‹ã›X⁄’òXŸJHOàŸ[ù\äà⁄[à^
-à^Y\èÀõò[YKö\”õ›[\HOHùYH»^Y\àKõò[YVÃKù’\\êÿ\ŸJ
-Hà	‘	Àà›[Nà€€ú›^›[J€€‹éà\€€‹úÀúö[X\ûKõ€ùŸZY⁄àõ€ùŸZY⁄ùÕÃõ€ù⁄^ôNàN
-Kà
-Kà
-Kà
-Kà
-Kà
-Kà
-Kà€€ú›⁄^ôYõﬁ
-⁄Yà‹X⁄[ô‘ÿÿ[KúÃLäKà^[ôY
-à⁄[à€€[[äà‹õ‹‹–^\–[Y€õY[ùà‹õ‹‹–^\–[Y€õY[ùú›\ùà⁄[ô[éà¬à^
-^Y\èÀõò[YHœ»	‘^Y\âÀ›[Nà\^›[\Àù]LÀò€‹U⁄]
-õ€ùŸZY⁄àõ€ùŸZY⁄ùÕå€€‹éà^ö[X\ûJJKà^
-^Y\èÀõ]ô[œ»	–]]IÀ›[Nà\^›[\Àòÿ\[€ãò€‹U⁄]
-€€‹éà^ŸX€€ô\ûJJKàKà
-Kà
-KàX€€êù]€äàX€€éà€€ú›X€€äX€€úÀò⁄]ÿùXòõW€›][ôW‹õ›[ôY€€‹éà\€€‹úÀúö[X\ûK⁄^ôNàå
-Kà€îô\‹ŸYà
+class _CoachInfoCard extends ConsumerWidget {
+  final String coachId;
+  final bool isDark;
+  final Color textSecondary;
 
-HOà€€ù^ú\⁄
-	Àÿ⁄]	 Kà
-KàKà
-Kà
-N¬àBüBÇò€\‹»–€ÿX⁄[ôõ–ÿ\ô^[ô»€€ú›[Y\ï⁄YŸ]¬àö[ò[›ö[ô»€ÿX⁄Y¬àö[ò[õ€€\—\öŒ¬àö[ò[€€‹à^ŸX€€ô\ûN¬Çà€€ú›–€ÿX⁄[ôõ–ÿ\ô
-‹ô\]Z\ôY\Àò€ÿX⁄Yô\]Z\ôY\Àö\—\öÀô\]Z\ôY\Àù^ŸX€€ô\û_JN¬Çà›ô\úöYBà⁄YŸ]ùZ[
-ùZ[€€ù^€€ù^⁄YŸ]ôYàôYäH¬àö[ò[€ÿX⁄\ﬁ[ò»HôYãùÿ]⁄
-€ÿX⁄õ›öY\ä€ÿX⁄Y
-JN¬àö[ò[€ÿX⁄H€ÿX⁄\ﬁ[òÀò\—]OÀùò[YN¬àö[ò[^ö[X\ûHH\—\ö»»\€€‹úÀù^ö[X\ûHà\€€‹úÀõY⁄^ö[X\ûN¬Çàô]\õà€€ùZ[ô\äà⁄Yà›XõKö[ôö[ö]KàY[ôŒà€€ú›YŸR[úŸ]Àò[
-‹X⁄[ô‘ÿÿ[KúÃMäKàX€‹ò][€éàõﬁX€‹ò][€äà€€‹éà\—\ö»»\€€‹úÀòÿ\ôà\€€‹úÀõY⁄ÿ\ôàõ‹ô\îòY]\Œà\òY]\Àòúë€ãàõ‹ô\éàõ‹ô\ãò[
-€€‹éà
-\—\ö»»\€€‹úÀòõ‹ô\àà\€€‹úÀõY⁄õ‹ô\äKù⁄]ò[Y\ [NàçJJKà
-Kà⁄[àõ› à⁄[ô[éà¬àŸ\›\ôQ]X›‹äà€ï\à
+  const _CoachInfoCard({required this.coachId, required this.isDark, required this.textSecondary});
 
-HOà€€ù^ú\⁄
-	Àÿ€ÿX⁄…€ÿX⁄Y	 Kà⁄[à€€ùZ[ô\äà⁄YààZY⁄ààX€‹ò][€éàõﬁX€‹ò][€äà€€‹éà\€€‹úÀúö[X\ûKù⁄]ò[Y\ [NàåLäKàõ‹ô\îòY]\Œà\òY]\Àòúëù[à
-Kà⁄[à€\ôX›
-àõ‹ô\îòY]\Œà\òY]\Àòúëù[à⁄[à[XYŸKò\‹Ÿ]
-à	ÿ\‹Ÿ]Àÿ]ò]\úÀÿ€ÿX⁄ÃKöú…Ààö]àõﬁö]ò€›ô\ãà\úõ‹êùZ[\éà
-€€ù^\úõ‹ã›X⁄’òXŸJHOàŸ[ù\äà⁄[à^
-à€ÿX⁄Àõò[YKö\”õ›[\HOHùYH»€ÿX⁄Kõò[YVÃKù’\\êÿ\ŸJ
-Hà	–…Àà›[Nà€€ú›^›[J€€‹éà\€€‹úÀúö[X\ûKõ€ùŸZY⁄àõ€ùŸZY⁄ùÕÃõ€ù⁄^ôNàN
-Kà
-Kà
-Kà
-Kà
-Kà
-Kà
-Kà€€ú›⁄^ôYõﬁ
-⁄Yà‹X⁄[ô‘ÿÿ[KúÃLäKà^[ôY
-à⁄[à€€[[äà‹õ‹‹–^\–[Y€õY[ùà‹õ‹‹–^\–[Y€õY[ùú›\ùà⁄[ô[éà¬à^
-€ÿX⁄Àõò[YHœ»	–€ÿX⁄	À›[Nà\^›[\Àù]LÀò€‹U⁄]
-õ€ùŸZY⁄àõ€ùŸZY⁄ùÕå€€‹éà^ö[X\ûJJKà^
-€ÿX⁄Àú‹X⁄X[^ò][€àœ»	‘‹X⁄X[\›	À›[Nà\^›[\Àòÿ\[€ãò€‹U⁄]
-€€‹éà^ŸX€€ô\ûJJKàKà
-Kà
-KàX€€êù]€äàX€€éà€€ú›X€€äX€€úÀò⁄]ÿùXòõW€›][ôW‹õ›[ôY€€‹éà\€€‹úÀúö[X\ûK⁄^ôNàå
-Kà€îô\‹ŸYà
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final coachAsync = ref.watch(coachProvider(coachId));
+    final coach = coachAsync.asData?.value;
+    final textPrimary = isDark ? AppColors.textPrimary : AppColors.lightTextPrimary;
 
-HOà€€ù^ú\⁄
-	Àÿ⁄]	 Kà
-KàKà
-Kà
-N¬àBüBÇ
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(SpacingScale.s16),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.card : AppColors.lightCard,
+        borderRadius: AppRadius.brXl2,
+        border: Border.all(color: (isDark ? AppColors.border : AppColors.lightBorder).withValues(alpha: 0.5)),
+      ),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () => context.push('/coach/$coachId'),
+            child: Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.12),
+                borderRadius: AppRadius.brFull,
+              ),
+              child: ClipRRect(
+                borderRadius: AppRadius.brFull,
+                child: Image.asset(
+                  'assets/avatars/coach_1.jpg',
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Center(
+                    child: Text(
+                      coach?.name.isNotEmpty == true ? coach!.name[0].toUpperCase() : 'C',
+                      style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700, fontSize: 18),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: SpacingScale.s12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(coach?.name ?? 'Coach', style: AppTextStyles.title3.copyWith(fontWeight: FontWeight.w600, color: textPrimary)),
+                Text(coach?.specialization ?? 'Specialist', style: AppTextStyles.caption.copyWith(color: textSecondary)),
+              ],
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.chat_bubble_outline_rounded, color: AppColors.primary, size: 20),
+            onPressed: () => context.push('/chat'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+

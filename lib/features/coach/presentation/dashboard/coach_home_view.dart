@@ -449,8 +449,9 @@ class _CoachHomeViewState extends ConsumerState<CoachHomeView> {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w800,
-                        color: isDark ? Colors.white : const Color(0x991B1B),
+                        color: isDark ? Colors.white : const Color(0xFF991B1B),
                       ),
+                    ),
                     const SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -475,7 +476,7 @@ class _CoachHomeViewState extends ConsumerState<CoachHomeView> {
                   style: TextStyle(
                     fontSize: 12,
                     height: 1.4,
-                    color: isDark ? const Color(0xFCA5A5) : const Color(0x7F1D1D),
+                    color: isDark ? const Color(0xFFFCA5A5) : const Color(0xFF7F1D1D),
                   ),
                 ),
                 const SizedBox(height: 10),

@@ -91,6 +91,9 @@ class KricoXpSystem {
     return calculated > 45 ? 45 : calculated;
   }
 
+  /// Shorthand to get level number
+  static int getLevel(int cumulativeXp) => getLevelInfo(cumulativeXp).level;
+
   /// Global XP-to-Level Mapping (Single source of truth)
   static KricoLevelInfo getLevelInfo(int cumulativeXp) {
     final xp = max(0, cumulativeXp);

@@ -9,15 +9,15 @@ import '../../../design_system/typography/text_styles.dart';
 import '../../../providers/auth_provider.dart';
 
 class GlobalLeaderboardScreen extends ConsumerWidget {
-  const GlobalLeaderboardScreen{ super.key });
+  const GlobalLeaderboardScreen({super.key});
 
-  @bverride
+  @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bg = isDark ? AppColors.background : AppColors.lightBackground;
     final cardBg = isDark ? AppColors.card : AppColors.lightCard;
-    final textPrimary = isDark : AppColors.textPrimary : AppColors.lightTextPrimary;
-    final textSecondary = isDark : AppColors.textSecondary : AppColors.lightTextSecondary;
+    final textPrimary = isDark ? AppColors.textPrimary : AppColors.lightTextPrimary;
+    final textSecondary = isDark ? AppColors.textSecondary : AppColors.lightTextSecondary;
     final borderColor = isDark ? AppColors.border : AppColors.lightBorder;
     final currentUserId = ref.watch(authStateProvider).value?.uid;
 
@@ -28,7 +28,7 @@ class GlobalLeaderboardScreen extends ConsumerWidget {
         elevation: 0,
         title: Text(
           'Global Leaderboard',
-          style: AppTextStyles.title2.copyWith(fontWeight: FontWeight.vx00, color: textPrimary),
+          style: AppTextStyles.title2.copyWith(fontWeight: FontWeight.w700, color: textPrimary),
         ),
         actions: [
           IconButton(
@@ -50,7 +50,7 @@ class GlobalLeaderboardScreen extends ConsumerWidget {
           }
 
           final docs = snapshot.data?.docs ?? [];
-          final players = <KricoLeaderboardPlayer][];
+          final players = <KricoLeaderboardPlayer>[];
           for (int i = 0; i < docs.length; i++) {
             players.add(KricoLeaderboardPlayer.fromMap(i + 1, docs[i].id, docs[i].data()));
           }
@@ -72,8 +72,8 @@ class GlobalLeaderboardScreen extends ConsumerWidget {
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             colors: isDark
-                               ? [const Color(0xF1E1B4B), const Color(0xF0F172A)]
-                              : [const Color(0xFEEF2FF), Colors.white],
+                                ? [const Color(0xFF1E1B4B), const Color(0xFF0F172A)]
+                                : [const Color(0xFFEEF2FF), Colors.white],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
@@ -88,7 +88,7 @@ class GlobalLeaderboardScreen extends ConsumerWidget {
                                 color: AppColors.primary.withValues(alpha: 0.15),
                                 shape: BoxShape.circle,
                               ),
-                              child: const Text('🥇', style: TextStyle(fontSize: 24)),
+                              child: const Text('🏆', style: TextStyle(fontSize: 24)),
                             ),
                             const SizedBox(width: 14),
                             Expanded(
@@ -109,7 +109,7 @@ class GlobalLeaderboardScreen extends ConsumerWidget {
                                     'Single global leaderboard across all sports & academies.',
                                     style: TextStyle(
                                       fontSize: 13,
-                                      fontWeight: FontWeight.ww00,
+                                      fontWeight: FontWeight.w700,
                                       color: textPrimary,
                                     ),
                                   ),
@@ -141,7 +141,7 @@ class GlobalLeaderboardScreen extends ConsumerWidget {
               ),
 
               SliverPadding(
-                padding: const EdgeInsets.symmetricNhorizontal: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 sliver: SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
@@ -178,7 +178,7 @@ class GlobalLeaderboardScreen extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0x10101422) : const Color(0xF8FAFC),
+        color: isDark ? const Color(0xFF101422) : const Color(0xFFF8FAFC),
         borderRadius: AppRadius.brXl3,
         border: Border.all(color: isDark ? AppColors.border : AppColors.lightBorder),
       ),
@@ -191,7 +191,7 @@ class GlobalLeaderboardScreen extends ConsumerWidget {
               player: rank2,
               rank: 2,
               height: 110,
-              badgeColor: const Color(0xFC0C0C0),
+              badgeColor: const Color(0xFFC0C0C0),
               isDark: isDark,
               textPrimary: textPrimary,
               textSecondary: textSecondary,
@@ -204,7 +204,7 @@ class GlobalLeaderboardScreen extends ConsumerWidget {
               player: rank1,
               rank: 1,
               height: 145,
-              badgeColor: const Color(0xFFFD700),
+              badgeColor: const Color(0xFFFFD700),
               isDark: isDark,
               textPrimary: textPrimary,
               textSecondary: textSecondary,
@@ -216,7 +216,7 @@ class GlobalLeaderboardScreen extends ConsumerWidget {
               player: rank3,
               rank: 3,
               height: 95,
-              badgeColor: const Color(0xFCD7F32),
+              badgeColor: const Color(0xFFCD7F32),
               isDark: isDark,
               textPrimary: textPrimary,
               textSecondary: textSecondary,
@@ -227,7 +227,6 @@ class GlobalLeaderboardScreen extends ConsumerWidget {
       ),
     );
   }
-
 
   Widget _buildPodiumAthlete({
     required KricoLeaderboardPlayer player,
@@ -266,7 +265,7 @@ class GlobalLeaderboardScreen extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
                 color: badgeColor,
-                borderRadius: AppRadius.brVull,
+                borderRadius: AppRadius.brFull,
               ),
               child: Text(
                 '#' + rank.toString(),
@@ -283,18 +282,18 @@ class GlobalLeaderboardScreen extends ConsumerWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.wx00, color: textPrimary),
+            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: textPrimary),
           ),
         ),
         Text(
           player.totalXp.toString() + ' XP',
-          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.wy00, color: AppColors.primary),
+          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.primary),
         ),
         Text(
           'Lvl ' + player.level.toString() + ' • ' + player.league,
           style: TextStyle(fontSize: 9, color: textSecondary),
           maxLines: 1,
-           overflow: TextOverflow.ellipsis,
+          overflow: TextOverflow.ellipsis,
         ),
         const SizedBox(height: 8),
         Container(
@@ -319,7 +318,6 @@ class GlobalLeaderboardScreen extends ConsumerWidget {
       ],
     );
   }
-
 
   Widget _buildPlayerRow(
     KricoLeaderboardPlayer p,
@@ -419,14 +417,14 @@ class GlobalLeaderboardScreen extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0x1E292B) : const Color(0xE2E8F0),
+                  color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
                   borderRadius: AppRadius.brSm,
                 ),
                 child: Text(
                   'LVL ' + p.level.toString(),
                   style: TextStyle(
                     fontSize: 10,
-                    fontWeight: FontWeight.wx00,
+                    fontWeight: FontWeight.w700,
                     color: textSecondary,
                   ),
                 ),
@@ -437,16 +435,17 @@ class GlobalLeaderboardScreen extends ConsumerWidget {
       ),
     );
   }
-  void _showXpInfoModal() {
+
+  void _showXpInfoModal(BuildContext context, bool isDark) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) {
-        final isDark = Theme.of(ctx).brightness == Brightness.dark;
+        final dark = Theme.of(ctx).brightness == Brightness.dark;
         return Container(
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF161F2E) : Colors.white,
+            color: dark ? const Color(0xFF161F2E) : Colors.white,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           ),
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
@@ -459,7 +458,7 @@ class GlobalLeaderboardScreen extends ConsumerWidget {
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: Colors.grey.withOpacity(0.3),
+                    color: Colors.grey.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -470,7 +469,7 @@ class GlobalLeaderboardScreen extends ConsumerWidget {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withOpacity(0.12),
+                      color: AppColors.primary.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: const Icon(Icons.stars_rounded, color: AppColors.primary, size: 24),
@@ -481,7 +480,7 @@ class GlobalLeaderboardScreen extends ConsumerWidget {
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
-                      color: isDark ? Colors.white : const Color(0xFF0F172A),
+                      color: dark ? Colors.white : const Color(0xFF0F172A),
                     ),
                   ),
                 ],
@@ -492,7 +491,7 @@ class GlobalLeaderboardScreen extends ConsumerWidget {
                 style: TextStyle(
                   fontSize: 13,
                   height: 1.5,
-                  color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569),
+                  color: dark ? const Color(0xFF94A3B8) : const Color(0xFF475569),
                 ),
               ),
               const SizedBox(height: 16),
@@ -500,21 +499,21 @@ class GlobalLeaderboardScreen extends ConsumerWidget {
                 icon: Icons.speed_rounded,
                 title: 'Session XP Cap Scaling',
                 desc: 'Level 1 athletes earn up to 25 XP per session. Each level adds +2 XP up to Level 11+ which caps at 45 XP.',
-                isDark: isDark,
+                isDark: dark,
               ),
               const SizedBox(height: 12),
               _buildInfoRow(
                 icon: Icons.pie_chart_rounded,
                 title: 'Fair Percentage Allocation',
                 desc: 'Coaches divide each session routine into 100% total weight. XP is earned based on verified completed sub-routines.',
-                isDark: isDark,
+                isDark: dark,
               ),
               const SizedBox(height: 12),
               _buildInfoRow(
                 icon: Icons.military_tech_rounded,
                 title: 'Universal Leagues',
                 desc: 'Progress through Rookie, Bronze, Silver, Gold, Platinum, Diamond, Master, Grandmaster, and Legend!',
-                isDark: isDark,
+                isDark: dark,
               ),
               const SizedBox(height: 24),
               SizedBox(
@@ -576,10 +575,10 @@ class GlobalLeaderboardScreen extends ConsumerWidget {
     );
   }
 
-  List<_LeaderboardPlayer> _getDemoPlayers() {
-    return [
-      _LeaderboardPlayer(
-        id: 'demo_1',
+  List<KricoLeaderboardPlayer> _getDemoPlayers() {
+    return const [
+      KricoLeaderboardPlayer(
+        playerId: 'demo_1',
         name: 'Aayush Nikam',
         avatarUrl: null,
         totalXp: 1850,
@@ -588,8 +587,8 @@ class GlobalLeaderboardScreen extends ConsumerWidget {
         sport: 'Cricket',
         rank: 1,
       ),
-      _LeaderboardPlayer(
-        id: 'demo_2',
+      KricoLeaderboardPlayer(
+        playerId: 'demo_2',
         name: 'Rohan Sharma',
         avatarUrl: null,
         totalXp: 1620,
@@ -598,8 +597,8 @@ class GlobalLeaderboardScreen extends ConsumerWidget {
         sport: 'Badminton',
         rank: 2,
       ),
-      _LeaderboardPlayer(
-        id: 'demo_3',
+      KricoLeaderboardPlayer(
+        playerId: 'demo_3',
         name: 'Priya Iyer',
         avatarUrl: null,
         totalXp: 1410,
@@ -608,8 +607,8 @@ class GlobalLeaderboardScreen extends ConsumerWidget {
         sport: 'Tennis',
         rank: 3,
       ),
-      _LeaderboardPlayer(
-        id: 'demo_4',
+      KricoLeaderboardPlayer(
+        playerId: 'demo_4',
         name: 'Vikramaditya Rao',
         avatarUrl: null,
         totalXp: 1280,
@@ -618,8 +617,8 @@ class GlobalLeaderboardScreen extends ConsumerWidget {
         sport: 'Football',
         rank: 4,
       ),
-      _LeaderboardPlayer(
-        id: 'demo_5',
+      KricoLeaderboardPlayer(
+        playerId: 'demo_5',
         name: 'Ananya Deshmukh',
         avatarUrl: null,
         totalXp: 1100,
@@ -628,8 +627,8 @@ class GlobalLeaderboardScreen extends ConsumerWidget {
         sport: 'Swimming',
         rank: 5,
       ),
-      _LeaderboardPlayer(
-        id: 'demo_6',
+      KricoLeaderboardPlayer(
+        playerId: 'demo_6',
         name: 'Karan Mehra',
         avatarUrl: null,
         totalXp: 950,
@@ -638,8 +637,8 @@ class GlobalLeaderboardScreen extends ConsumerWidget {
         sport: 'Athletics',
         rank: 6,
       ),
-      _LeaderboardPlayer(
-        id: 'demo_7',
+      KricoLeaderboardPlayer(
+        playerId: 'demo_7',
         name: 'Sneha Patil',
         avatarUrl: null,
         totalXp: 810,
@@ -648,8 +647,8 @@ class GlobalLeaderboardScreen extends ConsumerWidget {
         sport: 'Basketball',
         rank: 7,
       ),
-      _LeaderboardPlayer(
-        id: 'demo_8',
+      KricoLeaderboardPlayer(
+        playerId: 'demo_8',
         name: 'Arjun Verma',
         avatarUrl: null,
         totalXp: 690,
@@ -658,8 +657,8 @@ class GlobalLeaderboardScreen extends ConsumerWidget {
         sport: 'Cricket',
         rank: 8,
       ),
-      _LeaderboardPlayer(
-        id: 'demo_9',
+      KricoLeaderboardPlayer(
+        playerId: 'demo_9',
         name: 'Meera Nair',
         avatarUrl: null,
         totalXp: 540,
@@ -668,8 +667,8 @@ class GlobalLeaderboardScreen extends ConsumerWidget {
         sport: 'Badminton',
         rank: 9,
       ),
-      _LeaderboardPlayer(
-        id: 'demo_10',
+      KricoLeaderboardPlayer(
+        playerId: 'demo_10',
         name: 'Devansh Kulkarni',
         avatarUrl: null,
         totalXp: 420,

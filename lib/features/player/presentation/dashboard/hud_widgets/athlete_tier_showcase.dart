@@ -60,16 +60,16 @@ class AthleteTierShowcase extends StatelessWidget {
                     ),
                     Text(
                       'Tier 8: Elite Competitor',
+                      style: AppTextStyles.title3.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: textColor,
+                      ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       'Universal certification framework based on global KRICO XP',
                       style: AppTextStyles.captionXs.copyWith(
                         color: subColor,
-                      ),
-                      style: AppTextStyles.title3.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: textColor,
                       ),
                     ),
                   ],

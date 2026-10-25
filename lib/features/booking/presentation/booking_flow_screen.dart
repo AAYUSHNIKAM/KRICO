@@ -1001,7 +1001,7 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
               icon: Icons.sports_score_rounded,
               onPressed: () {
                 if (_confirmedSessionId != null && _confirmedSessionId!.isNotEmpty) {
-                  context.push('/session/' + _confirmedSessionId);
+                  context.push('/session/' + _confirmedSessionId!);
                 } else {
                   context.go('/home');
                 }

@@ -897,7 +897,7 @@ class _TrainingCurriculumSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final routines = coach.routines;
+    final routines = coach.routines ?? const [];
     final cardBg = isDark ? AppColors.card : AppColors.lightCard;
     final borderColor = (isDark ? AppColors.border : AppColors.lightBorder).withValues(alpha: 0.6);
 
@@ -944,7 +944,7 @@ class _TrainingCurriculumSection extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(SpacingScale.s12),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xF1131D31) : const Color(0xFF1F5F:),
+            color: isDark ? const Color(0xFF111D31) : const Color(0xFFF1F5F9),
             borderRadius: AppRadius.brLg,
             border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
           ),
@@ -959,7 +959,7 @@ class _TrainingCurriculumSection extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 12,
                     height: 1.4,
-                    color: isDark ? const Color(0xF94A3B8) : const Color(0xFF475569),
+                    color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569),
                   ),
                 ),
               ),
@@ -985,8 +985,8 @@ class _TrainingCurriculumSection extends StatelessWidget {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        coach.specialization + ' Standard Training Framework',
-                        style: AppTextStyles.title3.copyWith(fontWeight: FontWeight.sw700, color: textPrimary),
+                        (coach.specialization ?? 'Sports') + ' Standard Training Framework',
+                        style: AppTextStyles.title3.copyWith(fontWeight: FontWeight.w700, color: textPrimary),
                       ),
                     ),
                   ],
@@ -1016,7 +1016,7 @@ class _TrainingCurriculumSection extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          routine.name,
+                          routine.title,
                           style: AppTextStyles.title3.copyWith(fontWeight: FontWeight.w700, color: textPrimary),
                         ),
                       ),
@@ -1048,7 +1048,7 @@ class _TrainingCurriculumSection extends StatelessWidget {
                   const Divider(height: 1),
                   const SizedBox(height: SpacingScale.s8),
                   Text(
-                    'SUB-ROUTINES �� XP BREAKDOWN',
+                    'SUB-ROUTINES & XP BREAKDOWN',
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w800,
@@ -1062,7 +1062,7 @@ class _TrainingCurriculumSection extends StatelessWidget {
                       margin: const EdgeInsets.only(bottom: 8),
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: isDark ? const Color(0x0F172A) : const Color(0xF8FAFC),
+                        color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
                         borderRadius: AppRadius.brMd,
                         border: Border.all(
                           color: (isDark ? AppColors.border : AppColors.lightBorder).withValues(alpha: 0.4),
@@ -1082,7 +1082,7 @@ class _TrainingCurriculumSection extends StatelessWidget {
                               style: const TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w800,
-                                color: Color(0x0F172A),
+                                color: Color(0xFF0F172A),
                               ),
                             ),
                           ),
@@ -1116,7 +1116,7 @@ class _TrainingCurriculumSection extends StatelessWidget {
                                           'Criteria: ' + sub.completionCriteria,
                                           style: const TextStyle(
                                             fontSize: 10,
-                                            fontWeight: FontWeight.sw700,
+                                            fontWeight: FontWeight.w700,
                                             color: AppColors.primary,
                                           ),
                                           maxLines: 1,
@@ -1130,15 +1130,15 @@ class _TrainingCurriculumSection extends StatelessWidget {
                                           fontSize: 10,
                                           color: textSecondary,
                                         ),
-                                     ),
-                                ],
-                              ),
-                            ],
-                          ],
-                        ),
+                                      ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
                 ],
               ),
             ),
