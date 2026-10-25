@@ -3,10 +3,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../design_system/tokens/colors.dart';
-import '../../../design_system/tokens/radius.dart';
-import '../../../design_system/tokens/spacing.dart';
-import '../../../design_system/tokens/typography.dart';
+import '../../../design_system/colors/app_colors.dart';
+import '../../../design_system/radius/radius.dart';
+import '../../../design_system/spacing/spacing_scale.dart';
+import '../../../design_system/typography/text_styles.dart';
 import '../../../models/training_routine_model.dart';
 import '../../../core/gamification/krico_xp_system.dart';
 
@@ -764,11 +764,11 @@ class _CoachTrainingRoutineSetupScreenState
                   borderRadius: AppRadius.brSm,
                 ),
                 child: Text('Phase #${index + 1}',
-                    style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w800, fontSize: 11)),
+                    style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w800, fontSize: 11)),
               ),
               const Spacer(),
               IconButton(
-                icon: const Icon(Icons.delete_outline_rounded, color: AppColors.danger, size: 20),
+                icon: Icon(Icons.delete_outline_rounded, color: AppColors.danger, size: 20),
                 onPressed: () => _removeSubRoutine(index),
               ),
             ],
@@ -777,10 +777,10 @@ class _CoachTrainingRoutineSetupScreenState
           TextFormField(
             controller: item.nameCtrl,
             style: TextStyle(color: textColor, fontWeight: FontWeight.w700),
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               labelText: 'Sub-Routine Name (e.g. Kinetic Warmup)',
-              border: OutlineInputBorder(),
-              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              border: OutlineInputBorder(borderRadius: AppRadius.brLg),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             ),
             validator: (v) => (v == null || v.trim().isEmpty) ? 'Name required' : null,
           ),
@@ -788,10 +788,10 @@ class _CoachTrainingRoutineSetupScreenState
           TextFormField(
             controller: item.critCtrl,
             style: TextStyle(color: textColor, fontSize: 12),
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               labelText: 'Completion Criteria (e.g. 5x 40m Sprints)',
-              border: OutlineInputBorder(),
-              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              border: OutlineInputBorder(borderRadius: AppRadius.brLg),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             ),
             validator: (v) => (v == null || v.trim().isEmpty) ? 'Criteria required' : null,
           ),
@@ -803,10 +803,10 @@ class _CoachTrainingRoutineSetupScreenState
                 child: TextFormField(
                   controller: item.fieldCtrl,
                   style: TextStyle(color: textColor, fontSize: 12),
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'Tracking Metric (e.g. Reps, Time)',
-                    border: OutlineInputBorder(),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                    border: OutlineInputBorder(borderRadius: AppRadius.brLg),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                   ),
                 ),
               ),
@@ -817,11 +817,11 @@ class _CoachTrainingRoutineSetupScreenState
                   controller: item.pctCtrl,
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   style: TextStyle(color: textColor, fontWeight: FontWeight.w800),
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'XP %',
                     suffixText: '%',
-                    border: OutlineInputBorder(),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                    border: OutlineInputBorder(borderRadius: AppRadius.brLg),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                   ),
                   onChanged: (val) {
                     final p = double.tryParse(val) ?? 0.0;
