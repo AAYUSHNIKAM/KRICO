@@ -670,22 +670,31 @@ class _CoachTrainingRoutineSetupScreenState
                     const SizedBox(height: SpacingScale.s28),
 
                     // Sub-Routines Header
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('Sub-Routines & XP Share',
-                            style: AppTextStyles.title3.copyWith(fontWeight: FontWeight.w800, color: textColor)),
-                        FilledButton.icon(
-                          onPressed: _addSubRoutine,
-                          style: FilledButton.styleFrom(
-                            backgroundColor: AppColors.volt,
-                            foregroundColor: AppColors.midnightObsidian,
-                            shape: RoundedRectangleBorder(borderRadius: AppRadius.brLg),
+                    SizedBox(
+                      width: double.infinity,
+                      child: Wrap(
+                        alignment: WrapAlignment.spaceBetween,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: SpacingScale.s12,
+                        runSpacing: SpacingScale.s10,
+                        children: [
+                          Text(
+                            'Sub-Routines & XP Share',
+                            style: AppTextStyles.title3.copyWith(fontWeight: FontWeight.w800, color: textColor),
                           ),
-                          icon: const Icon(Icons.add_rounded, size: 16),
-                          label: const Text('Add Phase', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 12)),
-                        ),
-                      ],
+                          FilledButton.icon(
+                            onPressed: _addSubRoutine,
+                            style: FilledButton.styleFrom(
+                              backgroundColor: AppColors.volt,
+                              foregroundColor: AppColors.midnightObsidian,
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                              shape: RoundedRectangleBorder(borderRadius: AppRadius.brLg),
+                            ),
+                            icon: const Icon(Icons.add_rounded, size: 16),
+                            label: const Text('Add Phase', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 12)),
+                          ),
+                        ],
+                      ),
                     ),
                     const SizedBox(height: SpacingScale.s16),
 
