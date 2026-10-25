@@ -44,6 +44,7 @@ List<WorkspaceDestination> workspaceDestinations(UserRole role) {
       const WorkspaceDestination('schedule', 'Schedule', Icons.calendar_month_outlined, 'Manage sessions, attendance and completion'),
       const WorkspaceDestination('students', 'Players', Icons.people_outline, 'Review your players and record their progress'),
       messages,
+      const WorkspaceDestination('routines', 'Training routines', Icons.fitness_center_outlined, 'Configure curriculum sub-routines & 100% KRICO XP distribution'),
       const WorkspaceDestination('availability', 'Availability', Icons.edit_calendar_outlined, 'Publish the dates and times players can book'),
       const WorkspaceDestination('earnings', 'Earnings', Icons.account_balance_wallet_outlined, 'Review your session earnings', section: 'Business management'),
       const WorkspaceDestination('overview', 'Business overview', Icons.insights_outlined, 'Review statistics, milestones and your plan', section: 'Business management'),

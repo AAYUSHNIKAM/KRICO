@@ -1,3 +1,4 @@
+import '../../coach/presentation/coach_training_routine_setup_screen.dart';
 import 'package:flutter/material.dart';
 import '../../../design_system/layouts/premium_nav_item.dart';
 import '../../../design_system/layouts/premium_shell.dart';
@@ -68,6 +69,7 @@ class RoleWorkspace extends StatelessWidget {
     'requests' => BookingRequestsScreen(coachId: user.uid),
     'schedule' => ScheduleTab(coachId: user.uid),
     'students' => StudentsTab(coachId: user.uid),
+    'routines' => CoachTrainingRoutineSetupScreen(coachId: user.uid, showAppBar: false),
     'availability' => ManageAvailabilityScreen(coachId: user.uid),
     'earnings' => EarningsTab(coachId: user.uid),
     'offers' => CoachOffersScreen(coachId: user.uid),

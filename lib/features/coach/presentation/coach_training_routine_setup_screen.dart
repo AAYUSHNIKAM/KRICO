@@ -1,20 +1,23 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../design_system/colors/app_colors.dart';
-import '../../../design_system/radius/radius.dart';
-import '../../../design_system/spacing/spacing_scale.dart';
-import '../../../design_system/typography/text_styles.dart';
+
+import '../../../design_system/tokens/colors.dart';
+import '../../../design_system/tokens/radius.dart';
+import '../../../design_system/tokens/spacing.dart';
+import '../../../design_system/tokens/typography.dart';
 import '../../../models/training_routine_model.dart';
 import '../../../core/gamification/krico_xp_system.dart';
 
 class CoachTrainingRoutineSetupScreen extends ConsumerStatefulWidget {
   final String coachId;
+  final bool showAppBar;
 
   const CoachTrainingRoutineSetupScreen({
     super.key,
     required this.coachId,
+    this.showAppBar = true,
   });
 
   @override
@@ -25,61 +28,152 @@ class CoachTrainingRoutineSetupScreen extends ConsumerStatefulWidget {
 class _CoachTrainingRoutineSetupScreenState
     extends ConsumerState<CoachTrainingRoutineSetupScreen> {
   final _formKey = GlobalKey<FormState>();
-  late TextEditingController _titleController;
-  late TextEditingController _descController;
+  late final TextEditingController _titleController;
+  late final TextEditingController _descController;
   String _selectedSport = 'Athletics';
 
   final List<_SubRoutineDraft> _subRoutines = [];
+  bool _loading = true;
+  bool _isExistingRoutine = false;
   bool _saving = false;
   bool _hasShownExplainer = false;
+
+  final List<String> _availableSports = [
+    'Athletics',
+    'Badminton',
+    'Basketball',
+    'Cricket',
+    'Football',
+    'Swimming',
+    'Tennis',
+  ];
 
   @override
   void initState() {
     super.initState();
-    _titleController = TextEditingController(text: 'Standard Athletic Performance Routine');
+    _titleController = TextEditingController(
+      text: 'Standard Session Curriculum',
+    );
     _descController = TextEditingController(
       text: 'Accredited multi-phase training curriculum focusing on progressive skill acquisition, kinetic execution, and functional recovery.',
     );
+    _loadExistingRoutine();
+  }
 
-    // Initial default 4-phase standard curriculum equaling 100%
-    _subRoutines.addAll([
-      _SubRoutineDraft(
-        id: 'sub_warmup',
-        name: 'Dynamic Kinetic Warm-Up & Mobility',
-        description: 'Joint activation, dynamic stretching, and neuromuscular prep',
-        completionCriteria: 'Perform 100% of warmup movement sequences',
-        progressTrackingField: 'Completed (Yes/No)',
-        percentage: 20.0,
-      ),
-      _SubRoutineDraft(
-        id: 'sub_technical',
-        name: 'Technical Drill & Mechanics Acquisition',
-        description: 'Sport-specific drill repetitions emphasizing optimal biomechanics',
-        completionCriteria: 'Execute prescribed drill volume with coach verified form',
-        progressTrackingField: 'Repetitions / Sets',
-        percentage: 35.0,
-      ),
-      _SubRoutineDraft(
-        id: 'sub_tactical',
-        name: 'Tactical Game Simulation & Pressure Execution',
-        description: 'Competitive scenario play, decision making, and tempo training',
-        completionCriteria: 'Achieve targeted tactical objectives under match conditions',
-        progressTrackingField: 'Points / Score / Accuracy %',
-        percentage: 30.0,
-      ),
-      _SubRoutineDraft(
-        id: 'sub_recovery',
-        name: 'Biomechanics Review & Active Cool-Down',
-        description: 'Post-session recovery stretching, mobility check, and technical debrief',
-        completionCriteria: 'Complete cooldown sequence and review session milestones',
-        progressTrackingField: 'Coach Performance Grade (1-5)',
-        percentage: 15.0,
-      ),
-    ]);
+  Future<void> _loadExistingRoutine() async {
+    final authUid = FirebaseAuth.instance.currentUser?.uid;
+    final effectiveCoachId = widget.coachId.trim().isNotEmpty
+        ? widget.coachId.trim()
+        : (authUid ?? '');
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _showKricoXpExplainerModal();
-    });
+    if (effectiveCoachId.isNotEmpty) {
+      try {
+        final coachDoc = await FirebaseFirestore.instance
+            .collection('coaches')
+            .doc(effectiveCoachId)
+            .get();
+
+        Map<String, dynamic>? routineMap;
+
+        if (coachDoc.exists) {
+          final data = coachDoc.data() ?? {};
+          final routinesData = data['routines'] as List<dynamic>?;
+          if (routinesData != null && routinesData.isNotEmpty) {
+            routineMap = Map<String, dynamic>.from(routinesData.first as Map);
+          }
+        }
+
+        if (routineMap == null) {
+          final subDoc = await FirebaseFirestore.instance
+              .collection('coaches')
+              .doc(effectiveCoachId)
+              .collection('routines')
+              .doc('default')
+              .get();
+          if (subDoc.exists && subDoc.data() != null) {
+            routineMap = subDoc.data()!;
+          }
+        }
+
+        if (routineMap != null && mounted) {
+          final routine = TrainingRoutineModel.fromMap(routineMap);
+          if (routine.subRoutines.isNotEmpty) {
+            for (final s in _subRoutines) {
+              s.dispose();
+            }
+            _subRoutines.clear();
+
+            _titleController.text = routine.title;
+            _descController.text = routine.description;
+            if (routine.sport.isNotEmpty && _availableSports.contains(routine.sport)) {
+              _selectedSport = routine.sport;
+            }
+
+            for (final sub in routine.subRoutines) {
+              _subRoutines.add(_SubRoutineDraft(
+                id: sub.id,
+                name: sub.name,
+                description: sub.description,
+                completionCriteria: sub.completionCriteria,
+                progressTrackingField: sub.progressTrackingField,
+                percentage: sub.percentageAllocation,
+              ));
+            }
+
+            _isExistingRoutine = true;
+            _hasShownExplainer = true;
+            if (mounted) setState(() => _loading = false);
+            return;
+          }
+        }
+      } catch (e) {
+        debugPrint('[CoachRoutineSetup] Error loading existing routine: $e');
+      }
+    }
+
+    if (_subRoutines.isEmpty) {
+      _subRoutines.addAll([
+        _SubRoutineDraft(
+          id: 'sub_warmup',
+          name: 'Dynamic Kinetic Warm-Up & Mobility',
+          description: 'Joint activation, dynamic stretching, and neuromuscular prep',
+          completionCriteria: 'Perform 100% of warmup movement sequences',
+          progressTrackingField: 'Completed (Yes/No)',
+          percentage: 20.0,
+        ),
+        _SubRoutineDraft(
+          id: 'sub_technical',
+          name: 'Technical Drill & Mechanics Acquisition',
+          description: 'Sport-specific drill repetitions emphasizing optimal biomechanics',
+          completionCriteria: 'Execute prescribed drill volume with coach verified form',
+          progressTrackingField: 'Repetitions / Sets',
+          percentage: 35.0,
+        ),
+        _SubRoutineDraft(
+          id: 'sub_tactical',
+          name: 'Tactical Game Simulation & Pressure Execution',
+          description: 'Competitive scenario play, decision making, and tempo training',
+          completionCriteria: 'Achieve targeted tactical objectives under match conditions',
+          progressTrackingField: 'Points / Score / Accuracy %',
+          percentage: 30.0,
+        ),
+        _SubRoutineDraft(
+          id: 'sub_recovery',
+          name: 'Biomechanics Review & Active Cool-Down',
+          description: 'Post-session recovery stretching, mobility check, and technical debrief',
+          completionCriteria: 'Complete cooldown sequence and review session milestones',
+          progressTrackingField: 'Coach Performance Grade (1-5)',
+          percentage: 15.0,
+        ),
+      ]);
+    }
+
+    if (mounted) {
+      setState(() => _loading = false);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _showKricoXpExplainerModal();
+      });
+    }
   }
 
   @override
@@ -239,7 +333,7 @@ class _CoachTrainingRoutineSetupScreenState
 
   void _addSubRoutine() {
     setState(() {
-      final id = 'sub_';
+      final id = 'sub_${DateTime.now().millisecondsSinceEpoch}';
       _subRoutines.add(
         _SubRoutineDraft(
           id: id,
@@ -310,7 +404,7 @@ class _CoachTrainingRoutineSetupScreenState
           : 'Standard Session Curriculum';
 
       final routineModel = TrainingRoutineModel(
-        id: 'routine_' + effectiveCoachId + '_default',
+        id: 'routine_${effectiveCoachId}_default',
         coachId: effectiveCoachId,
         sport: _selectedSport,
         title: routineTitle,
@@ -329,7 +423,7 @@ class _CoachTrainingRoutineSetupScreenState
         'coachId': effectiveCoachId,
         'hasConfiguredRoutines': true,
         'routines': [routineData],
-        'updatedAt': FieldValue.serverTimestamp(),
+        'updatedAt': Timestamp.now(),
       }, SetOptions(merge: true));
 
       try {
@@ -337,21 +431,29 @@ class _CoachTrainingRoutineSetupScreenState
       } catch (_) {}
 
       if (mounted) {
+        setState(() {
+          _saving = false;
+          _isExistingRoutine = true;
+        });
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('🎉 Training routines configured successfully! Your profile is now available for bookings.'),
+          SnackBar(
+            content: Text(_isExistingRoutine
+                ? '🎉 Training routine updated successfully!'
+                : '🎉 Training routines configured successfully! Your profile is now available for bookings.'),
             backgroundColor: AppColors.emerald,
           ),
         );
-        Navigator.of(context).pop(true);
+        if (Navigator.of(context).canPop()) {
+          Navigator.of(context).pop(true);
+        }
       }
     } catch (e, stackTrace) {
-      debugPrint('[CoachRoutineSetup] Error saving routines: \n');
+      debugPrint('[CoachRoutineSetup] Error saving routines: $e\n$stackTrace');
       if (mounted) {
         setState(() => _saving = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to save routines: ' + e.toString()),
+            content: Text('Failed to save routines: $e'),
             backgroundColor: AppColors.danger,
             duration: const Duration(seconds: 5),
           ),
@@ -369,112 +471,197 @@ class _CoachTrainingRoutineSetupScreenState
     final textColor = isDark ? AppColors.textPrimary : AppColors.lightTextPrimary;
     final subColor = isDark ? AppColors.textSecondary : AppColors.lightTextSecondary;
 
+    if (_loading) {
+      return Scaffold(
+        backgroundColor: bg,
+        appBar: widget.showAppBar
+            ? AppBar(
+                title: Text(_isExistingRoutine ? 'Edit Training Routine' : 'Training Routine Setup'),
+                backgroundColor: cardBg,
+                elevation: 0,
+              )
+            : null,
+        body: const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
     final total = _currentTotalPercentage;
     final formattedTotal = total.toStringAsFixed(total.truncateToDouble() == total ? 0 : 1);
 
     return Scaffold(
       backgroundColor: bg,
-      appBar: AppBar(
-        title: const Text('Mandatory Training Routine Setup'),
-        backgroundColor: cardBg,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.help_outline_rounded, color: AppColors.volt),
-            onPressed: () {
-              _hasShownExplainer = false;
-              _showKricoXpExplainerModal();
-            },
-          ),
-        ],
-      ),
+      appBar: widget.showAppBar
+          ? AppBar(
+              title: Text(_isExistingRoutine ? 'Edit Training Routine' : 'Mandatory Training Routine Setup'),
+              backgroundColor: cardBg,
+              elevation: 0,
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.help_outline_rounded, color: AppColors.volt),
+                  onPressed: () {
+                    _hasShownExplainer = false;
+                    _showKricoXpExplainerModal();
+                  },
+                ),
+              ],
+            )
+          : null,
       body: Form(
         key: _formKey,
         child: ListView(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
           children: [
-            Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 800),
+            if (!widget.showAppBar) ...[
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: AppColors.volt.withValues(alpha: 0.15),
+                      borderRadius: AppRadius.brLg,
+                    ),
+                    child: const Icon(Icons.fitness_center_rounded, color: AppColors.volt, size: 24),
+                  ),
+                  const SizedBox(width: SpacingScale.s12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _isExistingRoutine ? 'Edit Training Routine' : 'Training Routine Setup',
+                          style: AppTextStyles.title2.copyWith(fontWeight: FontWeight.w800, color: textColor),
+                        ),
+                        Text(
+                          'Configure multi-phase curriculum & 100% KRICO XP distribution',
+                          style: AppTextStyles.caption.copyWith(color: subColor),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.help_outline_rounded, color: AppColors.volt),
+                    tooltip: 'KRICO XP Rules',
+                    onPressed: () {
+                      _hasShownExplainer = false;
+                      _showKricoXpExplainerModal();
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: SpacingScale.s20),
+            ],
+
+            // Percentage Status Banner
+            Container(
+              padding: const EdgeInsets.all(SpacingScale.s16),
+              decoration: BoxDecoration(
+                color: _is100Percent
+                    ? AppColors.emerald.withValues(alpha: 0.12)
+                    : AppColors.danger.withValues(alpha: 0.12),
+                borderRadius: AppRadius.brXl,
+                border: Border.all(
+                  color: _is100Percent
+                      ? AppColors.emerald.withValues(alpha: 0.4)
+                      : AppColors.danger.withValues(alpha: 0.4),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    _is100Percent ? Icons.check_circle_rounded : Icons.warning_amber_rounded,
+                    color: _is100Percent ? AppColors.emerald : AppColors.danger,
+                    size: 28,
+                  ),
+                  const SizedBox(width: SpacingScale.s12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _is100Percent
+                              ? 'XP Allocation Valid: Exactly 100%'
+                              : 'Total XP Allocation: $formattedTotal% (Must equal 100%)',
+                          style: TextStyle(
+                            color: _is100Percent ? AppColors.emerald : AppColors.danger,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 14,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          _is100Percent
+                              ? 'Curriculum is ready. KRICO will calculate XP dynamically per player level.'
+                              : 'Adjust phase percentages below until the total equals exactly 100%.',
+                          style: TextStyle(
+                            color: isDark ? Colors.white70 : Colors.black87,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: SpacingScale.s24),
+
+            // Routine Profile Setup Card
+            Card(
+              color: cardBg,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: AppRadius.brXl,
+                side: BorderSide(color: borderColor),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(SpacingScale.s20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Sticky percentage telemetry banner
-                    Container(
-                      padding: const EdgeInsets.all(SpacingScale.s16),
-                      decoration: BoxDecoration(
-                        color: _is100Percent
-                            ? AppColors.emerald.withValues(alpha: 0.15)
-                            : AppColors.warning.withValues(alpha: 0.15),
-                        borderRadius: AppRadius.brXl,
-                        border: Border.all(
-                          color: _is100Percent ? AppColors.emerald : AppColors.warning,
-                          width: 1.5,
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            _is100Percent ? Icons.check_circle_rounded : Icons.pending_actions_rounded,
-                            color: _is100Percent ? AppColors.emerald : AppColors.warning,
-                            size: 26,
-                          ),
-                          const SizedBox(width: SpacingScale.s12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  _is100Percent
-                                      ? 'Total Allocation: 100% (Ready to Save)'
-                                      : 'Total Allocation: % / 100%',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 14,
-                                    color: _is100Percent ? AppColors.emerald : AppColors.warning,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  _is100Percent
-                                      ? 'XP weights are distributed evenly. Beginners earn 25 XP; higher levels scale to 45 XP.'
-                                      : (total < 100
-                                          ? 'Please allocate the remaining % across sub-routines.'
-                                          : 'Total exceeds 100% by %. Please balance weights.'),
-                                  style: TextStyle(fontSize: 11, color: textColor, height: 1.2),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: SpacingScale.s24),
-
-                    // Routine Overview Fields
-                    Text('Session Curriculum Overview',
+                    Text('Curriculum Details',
                         style: AppTextStyles.title3.copyWith(fontWeight: FontWeight.w800, color: textColor)),
-                    const SizedBox(height: SpacingScale.s12),
+                    const SizedBox(height: SpacingScale.s16),
 
-                    TextFormField(
-                      controller: _titleController,
-                      style: TextStyle(color: textColor, fontWeight: FontWeight.w600),
+                    // Sport Selector
+                    DropdownButtonFormField<String>(
+                      value: _selectedSport,
                       decoration: InputDecoration(
-                        labelText: 'Routine Title',
+                        labelText: 'Primary Sport',
                         filled: true,
                         fillColor: cardBg,
                         border: OutlineInputBorder(borderRadius: AppRadius.brLg),
                       ),
-                      validator: (v) => (v == null || v.trim().isEmpty) ? 'Routine title is required' : null,
+                      dropdownColor: cardBg,
+                      items: _availableSports.map((s) {
+                        return DropdownMenuItem(value: s, child: Text(s, style: TextStyle(color: textColor)));
+                      }).toList(),
+                      onChanged: (v) => setState(() => _selectedSport = v ?? _selectedSport),
                     ),
-                    const SizedBox(height: SpacingScale.s12),
+                    const SizedBox(height: SpacingScale.s16),
 
+                    // Routine Title
+                    TextFormField(
+                      controller: _titleController,
+                      style: TextStyle(color: textColor),
+                      decoration: InputDecoration(
+                        labelText: 'Curriculum Title',
+                        filled: true,
+                        fillColor: cardBg,
+                        border: OutlineInputBorder(borderRadius: AppRadius.brLg),
+                      ),
+                      validator: (v) => (v == null || v.trim().isEmpty) ? 'Please enter a curriculum title' : null,
+                    ),
+                    const SizedBox(height: SpacingScale.s16),
+
+                    // Routine Description
                     TextFormField(
                       controller: _descController,
                       maxLines: 2,
                       style: TextStyle(color: textColor),
                       decoration: InputDecoration(
-                        labelText: 'Curriculum Description',
+                        labelText: 'Philosophy / Description',
                         filled: true,
                         fillColor: cardBg,
                         border: OutlineInputBorder(borderRadius: AppRadius.brLg),
@@ -533,7 +720,9 @@ class _CoachTrainingRoutineSetupScreenState
                             )
                           : const Icon(Icons.check_circle_rounded),
                       label: Text(
-                        _saving ? 'Saving Routines...' : 'Save Routine & Activate Profile',
+                        _saving
+                            ? 'Saving Routines...'
+                            : (_isExistingRoutine ? 'Update Routines & Save Changes' : 'Save Routine & Activate Profile'),
                         style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15),
                       ),
                     ),
@@ -574,7 +763,7 @@ class _CoachTrainingRoutineSetupScreenState
                   color: AppColors.primary.withValues(alpha: 0.15),
                   borderRadius: AppRadius.brSm,
                 ),
-                child: Text('Phase #',
+                child: Text('Phase #${index + 1}',
                     style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w800, fontSize: 11)),
               ),
               const Spacer(),
@@ -625,8 +814,8 @@ class _CoachTrainingRoutineSetupScreenState
               Expanded(
                 flex: 2,
                 child: TextFormField(
-                  initialValue: item.percentage.toStringAsFixed(0),
-                  keyboardType: TextInputType.number,
+                  controller: item.pctCtrl,
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   style: TextStyle(color: textColor, fontWeight: FontWeight.w800),
                   decoration: const InputDecoration(
                     labelText: 'XP %',
@@ -654,6 +843,7 @@ class _SubRoutineDraft {
   final TextEditingController descCtrl;
   final TextEditingController critCtrl;
   final TextEditingController fieldCtrl;
+  final TextEditingController pctCtrl;
   double percentage;
 
   _SubRoutineDraft({
@@ -666,12 +856,16 @@ class _SubRoutineDraft {
   })  : nameCtrl = TextEditingController(text: name),
         descCtrl = TextEditingController(text: description),
         critCtrl = TextEditingController(text: completionCriteria),
-        fieldCtrl = TextEditingController(text: progressTrackingField);
+        fieldCtrl = TextEditingController(text: progressTrackingField),
+        pctCtrl = TextEditingController(
+          text: percentage.toStringAsFixed(percentage.truncateToDouble() == percentage ? 0 : 1),
+        );
 
   void dispose() {
     nameCtrl.dispose();
     descCtrl.dispose();
     critCtrl.dispose();
     fieldCtrl.dispose();
+    pctCtrl.dispose();
   }
 }
