@@ -419,7 +419,7 @@ class _CoachHomeViewState extends ConsumerState<CoachHomeView> {
       margin: const EdgeInsets.only(bottom: SpacingScale.s20),
       padding: const EdgeInsets.all(SpacingScale.s16),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0x2D1515) : const Color(0xFEF2F2),
+        color: isDark ? const Color(0xFF2D1515) : const Color(0xFFFEF2F2),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: AppColors.danger.withValues(alpha: 0.5),
@@ -443,13 +443,16 @@ class _CoachHomeViewState extends ConsumerState<CoachHomeView> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Action Required: Training Routines Setup',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w800,
-                        color: isDark ? Colors.white : const Color(0xFF991B1B),
+                    Expanded(
+                      child: Text(
+                        'Action Required: Training Routines Setup',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                          color: isDark ? Colors.white : const Color(0xFF991B1B),
+                        ),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -481,7 +484,7 @@ class _CoachHomeViewState extends ConsumerState<CoachHomeView> {
                 ),
                 const SizedBox(height: 10),
                 ElevatedButton.icon(
-                  onPressed: () => context.push('/coach-training-routines/' + coach.coachId),
+                  onPressed: () => context.push('/coach-training-routines/' + (coach.coachId.isNotEmpty ? coach.coachId : widget.user.uid)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.danger,
                     foregroundColor: Colors.white,

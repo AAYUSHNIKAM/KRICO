@@ -82,8 +82,8 @@ class TrainingRoutineModel {
     'description': description,
     'subRoutines': subRoutines.map((s) => s.toMap()).toList(),
     'isStandard': isStandard,
-    'createdAt': createdAt != null ? Timestamp.fromDate(createdAt!) : FieldValue.serverTimestamp(),
-    'updatedAt': FieldValue.serverTimestamp(),
+    'createdAt': createdAt != null ? Timestamp.fromDate(createdAt!) : Timestamp.now(),
+    'updatedAt': updatedAt != null ? Timestamp.fromDate(updatedAt!) : Timestamp.now(),
   };
 
   factory TrainingRoutineModel.fromMap(Map<String, dynamic> map) {

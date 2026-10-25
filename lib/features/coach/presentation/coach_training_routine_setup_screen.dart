@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -284,6 +285,15 @@ class _CoachTrainingRoutineSetupScreenState
     setState(() => _saving = true);
 
     try {
+      final authUid = FirebaseAuth.instance.currentUser?.uid;
+      final effectiveCoachId = widget.coachId.trim().isNotEmpty
+          ? widget.coachId.trim()
+          : (authUid ?? '');
+
+      if (effectiveCoachId.isEmpty) {
+        throw Exception('User authentication session expired. Please log in again.');
+      }
+
       final subRoutineModels = _subRoutines.map((s) {
         return TrainingSubRoutineModel(
           id: s.id,
@@ -295,23 +305,36 @@ class _CoachTrainingRoutineSetupScreenState
         );
       }).toList();
 
+      final routineTitle = _titleController.text.trim().isNotEmpty
+          ? _titleController.text.trim()
+          : 'Standard Session Curriculum';
+
       final routineModel = TrainingRoutineModel(
-        id: 'routine__default',
-        coachId: widget.coachId,
+        id: 'routine_' + effectiveCoachId + '_default',
+        coachId: effectiveCoachId,
         sport: _selectedSport,
-        title: _titleController.text.trim(),
+        title: routineTitle,
         description: _descController.text.trim(),
         subRoutines: subRoutineModels,
         isStandard: true,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
       );
 
       final coachRef =
-          FirebaseFirestore.instance.collection('coaches').doc(widget.coachId);
+          FirebaseFirestore.instance.collection('coaches').doc(effectiveCoachId);
+      final routineData = routineModel.toMap();
+
       await coachRef.set({
+        'coachId': effectiveCoachId,
         'hasConfiguredRoutines': true,
-        'routines': [routineModel.toMap()],
+        'routines': [routineData],
         'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
+
+      try {
+        await coachRef.collection('routines').doc('default').set(routineData, SetOptions(merge: true));
+      } catch (_) {}
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -322,13 +345,15 @@ class _CoachTrainingRoutineSetupScreenState
         );
         Navigator.of(context).pop(true);
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      debugPrint('[CoachRoutineSetup] Error saving routines: \n');
       if (mounted) {
         setState(() => _saving = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to save routines: '),
+            content: Text('Failed to save routines: ' + e.toString()),
             backgroundColor: AppColors.danger,
+            duration: const Duration(seconds: 5),
           ),
         );
       }

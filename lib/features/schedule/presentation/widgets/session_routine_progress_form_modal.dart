@@ -224,7 +224,7 @@ class _SessionRoutineProgressFormModalState
       if (mounted) {
         setState(() => _submitting = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to save progress: '), backgroundColor: AppColors.danger),
+          SnackBar(content: Text('Failed to save progress: ' + e.toString()), backgroundColor: AppColors.danger),
         );
       }
     }
@@ -314,7 +314,7 @@ class _SessionRoutineProgressFormModalState
       if (mounted) {
         setState(() => _submitting = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error completing session: '), backgroundColor: AppColors.danger),
+          SnackBar(content: Text('Error completing session: ' + e.toString()), backgroundColor: AppColors.danger),
         );
       }
     }
